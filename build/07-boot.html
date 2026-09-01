@@ -1,0 +1,192 @@
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+
+/* ---------------- theme: system → light → dark ---------------- */
+const THEMES = ['system','light','dark'];
+function applyTheme(t){
+  if(t === 'system') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', t);
+  try{ localStorage.setItem('kll-theme', t); }catch(_){}
+}
+try{
+  const saved = localStorage.getItem('kll-theme');
+  if(saved && THEMES.includes(saved)) applyTheme(saved);
+}catch(_){}
+$('#themeBtn').addEventListener('click', () => {
+  let cur = 'system';
+  try{ cur = localStorage.getItem('kll-theme') || 'system'; }catch(_){}
+  const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+  applyTheme(next);
+  window.__toast && window.__toast(next === 'system' ? 'Following your phone’s theme' : next[0].toUpperCase() + next.slice(1) + ' theme');
+});
+
+/* ---------------- tabs ---------------- */
+const VIEWS = {list:'#view-list', coll:'#view-coll', prog:'#view-prog'};
+document.querySelectorAll('.viewtab').forEach(t => {
+  t.addEventListener('click', () => {
+    const v = t.dataset.view;
+    window.__S.view = v;
+    document.querySelectorAll('.viewtab').forEach(x => x.setAttribute('aria-selected', String(x === t)));
+    Object.entries(VIEWS).forEach(([k, sel]) => { $(sel).hidden = (k !== v); });
+    window.__refresh();
+    window.scrollTo({top:0});
+  });
+});
+
+/* ---------------- controls ---------------- */
+const search = $('#search');
+let sTimer;
+search.addEventListener('input', () => {
+  $('#clearSearch').hidden = !search.value;
+  clearTimeout(sTimer);
+  sTimer = setTimeout(() => { window.__S.q = search.value.trim(); window.__renderList(); }, 140);
+});
+$('#clearSearch').addEventListener('click', () => {
+  search.value = ''; $('#clearSearch').hidden = true;
+  window.__S.q = ''; window.__renderList(); search.focus();
+});
+document.querySelectorAll('.seg [data-status]').forEach(b => {
+  b.addEventListener('click', () => {
+    window.__S.status = b.dataset.status;
+    document.querySelectorAll('.seg [data-status]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    window.__renderList();
+  });
+});
+$('#sort').addEventListener('change', e => { window.__S.sort = e.target.value; window.__renderList(); });
+
+/* ---------------- photo inputs ---------------- */
+async function handleFiles(files){
+  if(!files || !files.length) return;
+  const id = window.__pending();
+  if(!id) return;
+  window.__toast('Saving ' + files.length + (files.length === 1 ? ' photo…' : ' photos…'));
+  try{
+    await window.__addPhotos(id, files);
+    await window.__paintGallery(id);
+    window.__paintSeenBtn(id);
+    window.__syncFields(id);
+    window.__refresh();
+    window.__toast(files.length === 1 ? 'Photo saved' : files.length + ' photos saved');
+  }catch(err){
+    window.__toast(err && err.message ? err.message : 'That photo could not be saved.');
+  }
+}
+/* Snapshot the list first: clearing the input mutates the live FileList, and
+   handleFiles is async — reading it after the first await loses the rest. */
+function onPicked(e){
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  handleFiles(files);
+}
+$('#fileCam').addEventListener('change', onPicked);
+$('#filePick').addEventListener('change', onPicked);
+
+/* ---------------- backup ---------------- */
+const blobToDataURL = b => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(b); });
+const dataURLToBlob = async d => (await fetch(d)).blob();
+
+async function buildBackup(){
+  const log = window.__logRows();
+  const photos = [];
+  for(const e of log){
+    for(const pid of e.photos){
+      const rec = await window.__getPhoto(pid);
+      if(rec) photos.push({pid, full: await blobToDataURL(rec.full), thumb: await blobToDataURL(rec.thumb)});
+    }
+  }
+  return JSON.stringify({app:'kruger-life-list', version:1, exportedAt:new Date().toISOString(), log, photos});
+}
+
+async function doExport(){
+  window.__toast('Packing your backup…');
+  let json;
+  try{ json = await buildBackup(); }
+  catch(_){ window.__toast('Backup failed while reading your photos.'); return; }
+  const name = 'kruger-life-list-' + new Date().toISOString().slice(0,10) + '.json';
+
+  let saver = null;
+  try{ saver = (window.claude && window.claude.use) ? await window.claude.use('downloads') : null; }catch(_){}
+  if(saver){
+    try{
+      await saver.save({filename:name, data:json});
+      window.__toast('Backup saved');
+      return;
+    }catch(err){
+      if(err && err.code === 'cancelled'){ window.__toast('Backup cancelled'); return; }
+    }
+  }
+  // Plain-web fallback: works when the page is opened as a normal site or local file.
+  try{
+    const url = URL.createObjectURL(new Blob([json], {type:'application/json'}));
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    window.__toast('Backup downloaded');
+  }catch(_){
+    window.__toast('This browser blocked the download. Try the installed version.');
+  }
+}
+
+async function doRestore(file){
+  let data;
+  try{ data = JSON.parse(await file.text()); }
+  catch(_){ window.__toast('That file is not a Life List backup.'); return; }
+  if(!data || data.app !== 'kruger-life-list' || !Array.isArray(data.log)){
+    window.__toast('That file is not a Life List backup.');
+    return;
+  }
+  window.__toast('Restoring…');
+  try{
+    for(const p of (data.photos || [])){
+      await window.__putPhoto({pid:p.pid, full: await dataURLToBlob(p.full), thumb: await dataURLToBlob(p.thumb)});
+    }
+    for(const e of data.log) await window.__putLog(e);
+    await window.__reload();
+    window.__refresh();
+    closeMenu();
+    window.__toast('Restored ' + data.log.length + ' entries');
+  }catch(_){
+    window.__toast('Restore failed part-way. Your existing list is unchanged.');
+  }
+}
+$('#fileRestore').addEventListener('change', e => { if(e.target.files[0]) doRestore(e.target.files[0]); e.target.value = ''; });
+
+/* ---------------- menu ---------------- */
+function closeMenu(){
+  document.querySelectorAll('.menu, .scrim').forEach(n => n.remove());
+}
+$('#menuBtn').addEventListener('click', () => {
+  if(document.querySelector('.menu')) return closeMenu();
+  const scrim = document.createElement('div');
+  scrim.className = 'scrim';
+  scrim.addEventListener('click', closeMenu);
+  const m = document.createElement('div');
+  m.className = 'menu';
+  m.innerHTML = `
+    <div class="menu-inner">
+      <h3>Your list lives on this phone</h3>
+      <p>Photos and ticks are stored in this browser only — nothing is uploaded, and it all works with no signal. Clearing your browser data erases it, so export a backup after a good trip.</p>
+      <div class="btnrow">
+        <button class="btn primary" id="mExport">Export backup</button>
+        <button class="btn" id="mRestore">Restore backup</button>
+      </div>
+      <p style="margin-top:2px">To keep it one tap away: open your browser menu and choose <strong>Add to Home screen</strong>. It then opens full-screen like any other app.</p>
+      <div class="btnrow"><button class="btn ghost" id="mClose">Close</button></div>
+    </div>`;
+  document.body.appendChild(scrim);
+  document.body.appendChild(m);
+  $('#mExport').addEventListener('click', doExport);
+  $('#mRestore').addEventListener('click', () => $('#fileRestore').click());
+  $('#mClose').addEventListener('click', closeMenu);
+});
+
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape') return;
+  if(document.querySelector('.menu')) return closeMenu();
+  if(!$('#sheet').hidden) window.__closeSheet();
+});
+})();
+</script>

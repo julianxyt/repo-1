@@ -1,0 +1,530 @@
+<script>
+(function(){
+"use strict";
+
+/* ---------------- parse the checklist ---------------- */
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const SPECIES = [];
+GROUPS.forEach((g, gi) => {
+  (RAW[g.key]||'').trim().split('\n').forEach((line, i) => {
+    if(!line.trim()) return;
+    const [name, sci, rar, colls] = line.split('|');
+    SPECIES.push({
+      id: g.key + '-' + slug(name),
+      group: g.key, gi, ord: i,
+      name: name.trim(), sci: (sci||'').trim(),
+      rarity: parseInt(rar,10) || 1,
+      colls: (colls||'').split(',').map(s=>s.trim()).filter(Boolean),
+      hay: (name + ' ' + sci + ' ' + g.name).toLowerCase()
+    });
+  });
+});
+const BY_ID = new Map(SPECIES.map(s => [s.id, s]));
+const TOTAL = SPECIES.length;
+const GROUP_OF = Object.fromEntries(GROUPS.map(g => [g.key, g]));
+
+const RARITY_NOTE = {
+  1:'Common. If you spend a few days in the park with your eyes open, this one finds you.',
+  2:'Uncommon. Present throughout, but it takes a deliberate look — or the right time of day.',
+  3:'Rare. Expect to earn this one. Right habitat, right hour, and a good measure of luck.',
+  4:'Very rare. A genuine trophy sighting. Plenty of Kruger regulars go a decade without one.'
+};
+
+/* ---------------- storage: IndexedDB, entirely on-device ---------------- */
+const DB_NAME = 'kruger-life-list', DB_VER = 1;
+let idb = null;
+
+function openDB(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('log')) db.createObjectStore('log', {keyPath:'id'});
+      if(!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', {keyPath:'pid'});
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+/* Private browsing can refuse IndexedDB outright. Rather than break, fall back to
+   memory for the session and say so once — a lost tick beats a dead app. */
+const MEM = {log:new Map(), photos:new Map()};
+let useMem = false;
+function tx(store){
+  if(useMem){
+    const m = MEM[store];
+    return {
+      get:    k => ({_v: m.get(k)}),
+      getAll: () => ({_v: [...m.values()]}),
+      put:    v => { m.set(v.id !== undefined ? v.id : v.pid, v); return {_v: undefined}; },
+      delete: k => { m.delete(k); return {_v: undefined}; }
+    };
+  }
+  return idb.transaction(store, arguments[1]).objectStore(store);
+}
+function pReq(r){
+  if(r && Object.prototype.hasOwnProperty.call(r, '_v')) return Promise.resolve(r._v);
+  return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+}
+
+const LOG = new Map();        // id -> {id, seen, ts, date, place, notes, photos:[pid]}
+const PHOTO_URLS = new Map(); // pid -> {full, thumb}
+
+async function loadAll(){
+  const rows = await pReq(tx('log','readonly').getAll());
+  rows.forEach(r => LOG.set(r.id, r));
+}
+function entry(id){
+  let e = LOG.get(id);
+  if(!e){ e = {id, seen:false, ts:0, date:'', place:'', notes:'', photos:[]}; LOG.set(id, e); }
+  return e;
+}
+const hasContent = e => !!(e.seen || e.photos.length || e.notes || e.place || e.date);
+async function saveEntry(e){
+  if(!hasContent(e)){
+    LOG.delete(e.id);
+    await pReq(tx('log','readwrite').delete(e.id));
+  } else {
+    await pReq(tx('log','readwrite').put(JSON.parse(JSON.stringify(e))));
+  }
+}
+async function getPhoto(pid){ return pReq(tx('photos','readonly').get(pid)); }
+
+async function urlsFor(pid){
+  if(PHOTO_URLS.has(pid)) return PHOTO_URLS.get(pid);
+  const rec = await getPhoto(pid);
+  if(!rec) return null;
+  const u = {full: URL.createObjectURL(rec.full), thumb: URL.createObjectURL(rec.thumb)};
+  PHOTO_URLS.set(pid, u);
+  return u;
+}
+async function dropPhoto(pid){
+  const u = PHOTO_URLS.get(pid);
+  if(u){ URL.revokeObjectURL(u.full); URL.revokeObjectURL(u.thumb); PHOTO_URLS.delete(pid); }
+  await pReq(tx('photos','readwrite').delete(pid));
+}
+
+/* Resize on the way in: a phone photo is ~5 MB, and a life list is hundreds of them. */
+function shrink(file, max, quality){
+  return new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale);
+      c.height = Math.round(img.height * scale);
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('encode failed')), 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('That file could not be read as an image.')); };
+    img.src = url;
+  });
+}
+async function addPhotos(id, files){
+  const e = entry(id);
+  for(const f of files){
+    if(!f.type.startsWith('image/')) continue;
+    const pid = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+    const [full, thumb] = await Promise.all([shrink(f, 1600, 0.82), shrink(f, 200, 0.7)]);
+    await pReq(tx('photos','readwrite').put({pid, full, thumb}));
+    e.photos.push(pid);
+  }
+  if(e.photos.length && !e.seen){ e.seen = true; e.ts = Date.now(); if(!e.date) e.date = todayStr(); }
+  await saveEntry(e);
+}
+const todayStr = () => new Date().toISOString().slice(0,10);
+
+/* ---------------- view state ---------------- */
+const S = {view:'list', group:'all', status:'all', sort:'taxo', q:'', open:null};
+const $ = s => document.querySelector(s);
+const el = (t, cls, txt) => { const n = document.createElement(t); if(cls) n.className = cls; if(txt != null) n.textContent = txt; return n; };
+const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
+const isSeen = id => !!(LOG.get(id) && LOG.get(id).seen);
+
+function seenCount(list){ return list.reduce((n, s) => n + (isSeen(s.id) ? 1 : 0), 0); }
+
+/* ---------------- masthead ---------------- */
+function renderTally(){
+  const done = seenCount(SPECIES);
+  $('#tallySeen').textContent = done;
+  $('#tallyTot').textContent = TOTAL;
+  $('#tallyPct').textContent = (TOTAL ? Math.round(done / TOTAL * 100) : 0) + '%';
+  const rail = $('#rail');
+  if(!rail.children.length){
+    GROUPS.forEach(g => {
+      const n = SPECIES.filter(s => s.group === g.key).length;
+      const seg = el('div','rail-seg');
+      seg.style.flex = n + ' 1 0';
+      seg.title = g.name;
+      seg.appendChild(el('div','rail-fill'));
+      seg.dataset.g = g.key;
+      rail.appendChild(seg);
+    });
+  }
+  GROUPS.forEach(g => {
+    const list = SPECIES.filter(s => s.group === g.key);
+    const pct = list.length ? seenCount(list) / list.length * 100 : 0;
+    rail.querySelector(`[data-g="${g.key}"] .rail-fill`).style.width = pct + '%';
+  });
+}
+
+/* ---------------- checklist ---------------- */
+function renderChips(){
+  const box = $('#groupChips');
+  if(box.children.length) { updateChipCounts(); return; }
+  const mk = (key, label, n) => {
+    const b = el('button','chip');
+    b.type = 'button'; b.dataset.g = key;
+    b.setAttribute('aria-pressed', String(S.group === key));
+    b.innerHTML = `${label} <b data-c="${key}"></b>`;
+    b.addEventListener('click', () => {
+      S.group = key;
+      box.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.g === key)));
+      renderList();
+    });
+    return b;
+  };
+  box.appendChild(mk('all','All'));
+  GROUPS.forEach(g => box.appendChild(mk(g.key, g.name)));
+  updateChipCounts();
+}
+function updateChipCounts(){
+  $('#groupChips').querySelector('[data-c="all"]').textContent = seenCount(SPECIES) + '/' + TOTAL;
+  GROUPS.forEach(g => {
+    const list = SPECIES.filter(s => s.group === g.key);
+    const n = $('#groupChips').querySelector(`[data-c="${g.key}"]`);
+    if(n) n.textContent = seenCount(list) + '/' + list.length;
+  });
+}
+
+function filtered(){
+  let out = SPECIES;
+  if(S.group !== 'all') out = out.filter(s => s.group === S.group);
+  if(S.status === 'seen') out = out.filter(s => isSeen(s.id));
+  if(S.status === 'todo') out = out.filter(s => !isSeen(s.id));
+  if(S.q){
+    const q = S.q.toLowerCase();
+    out = out.filter(s => s.hay.includes(q));
+  }
+  out = out.slice();
+  if(S.sort === 'az') out.sort((a,b) => a.name.localeCompare(b.name));
+  else if(S.sort === 'rarity') out.sort((a,b) => b.rarity - a.rarity || a.gi - b.gi || a.ord - b.ord);
+  else if(S.sort === 'recent') out.sort((a,b) => ((LOG.get(b.id)||{}).ts||0) - ((LOG.get(a.id)||{}).ts||0) || a.name.localeCompare(b.name));
+  else out.sort((a,b) => a.gi - b.gi || a.ord - b.ord);
+  return out;
+}
+
+function rowFor(sp){
+  const e = LOG.get(sp.id);
+  const seen = !!(e && e.seen);
+  const li = el('li');
+  const row = el('button', 'row' + (seen ? ' is-seen' : ''));
+  row.type = 'button';
+  row.setAttribute('aria-label', sp.name + (seen ? ', logged' : ', not yet logged'));
+
+  const thumb = el('div','thumb');
+  thumb.innerHTML = `<span class="glyph">${GROUP_OF[sp.group].glyph}</span>`;
+  if(e && e.photos.length){
+    urlsFor(e.photos[0]).then(u => {
+      if(!u) return;
+      thumb.innerHTML = `<img alt="" src="${u.thumb}">`;
+      if(e.photos.length > 1) thumb.insertAdjacentHTML('beforeend', `<span class="multi">${e.photos.length}</span>`);
+    });
+  }
+  row.appendChild(thumb);
+
+  const body = el('div','rowbody');
+  body.appendChild(el('span','rname', sp.name));
+  body.appendChild(el('span','rsci', sp.sci));
+  const meta = el('div','rmeta');
+  meta.appendChild(el('span','tag r' + sp.rarity, RARITY[sp.rarity]));
+  sp.colls.forEach(c => {
+    const col = COLLECTIONS.find(x => x.key === c);
+    if(col) meta.appendChild(el('span','tag coll', col.name.replace(/^The /,'')));
+  });
+  body.appendChild(meta);
+  row.appendChild(body);
+
+  const tick = el('span','tick');
+  tick.innerHTML = icon('check');
+  row.appendChild(tick);
+
+  row.addEventListener('click', () => openSheet(sp.id));
+  li.appendChild(row);
+  return li;
+}
+
+function renderList(){
+  updateChipCounts();
+  const body = $('#listBody');
+  body.textContent = '';
+  const rows = filtered();
+  const done = seenCount(rows);
+  $('#countNote').textContent = rows.length
+    ? `${rows.length} species shown · ${done} logged · ${rows.length - done} to find`
+    : '';
+
+  if(!rows.length){
+    const e = el('div','empty');
+    e.innerHTML = '<strong>Nothing matches</strong>Try a different spelling, or clear the filters.';
+    body.appendChild(e);
+    return;
+  }
+
+  if(S.sort === 'taxo' && S.group === 'all'){
+    GROUPS.forEach(g => {
+      const chunk = rows.filter(s => s.group === g.key);
+      if(!chunk.length) return;
+      const h = el('div','grouphead');
+      h.innerHTML = `<h2>${g.name}</h2><span class="gcount">${seenCount(chunk)}/${chunk.length}</span><hr>`;
+      body.appendChild(h);
+      const ul = el('ul','list');
+      chunk.forEach(s => ul.appendChild(rowFor(s)));
+      body.appendChild(ul);
+    });
+  } else {
+    const ul = el('ul','list');
+    ul.style.marginTop = '10px';
+    rows.forEach(s => ul.appendChild(rowFor(s)));
+    body.appendChild(ul);
+  }
+}
+
+/* ---------------- collections ---------------- */
+function renderCollections(){
+  const box = $('#collBody');
+  box.textContent = '';
+  COLLECTIONS.forEach(col => {
+    const members = SPECIES.filter(s => s.colls.includes(col.key));
+    const done = seenCount(members);
+    const card = el('div','collcard');
+    const head = el('header');
+    head.innerHTML = `<h3>${col.name}</h3><span class="cdone${done === members.length ? ' full' : ''}">${done}/${members.length}</span>`;
+    card.appendChild(head);
+    card.appendChild(el('p', null, col.note));
+    const ul = el('ul','colllist');
+    members.forEach(sp => {
+      const li = el('li');
+      const b = el('button', isSeen(sp.id) ? 'done' : '');
+      b.type = 'button';
+      b.innerHTML = `<span class="cdot">${icon('check')}</span><span class="cn">${sp.name}</span>`;
+      b.addEventListener('click', () => openSheet(sp.id));
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    card.appendChild(ul);
+    box.appendChild(card);
+  });
+}
+
+/* ---------------- progress ---------------- */
+function bar(name, done, total, tone){
+  const row = el('div','bar-row');
+  const pct = total ? done / total * 100 : 0;
+  row.innerHTML =
+    `<div class="bar-top"><span class="bar-name">${name}</span>` +
+    `<span class="bar-num"><em>${done}</em> / ${total}&nbsp;&nbsp;${Math.round(pct)}%</span></div>` +
+    `<div class="bar-track"><div class="bar-fill${tone ? ' ' + tone : ''}"></div></div>`;
+  requestAnimationFrame(() => { row.querySelector('.bar-fill').style.width = pct + '%'; });
+  return row;
+}
+function renderProgress(){
+  const logged = seenCount(SPECIES);
+  const withPhotos = SPECIES.filter(s => { const e = LOG.get(s.id); return e && e.photos.length; }).length;
+  const shots = [...LOG.values()].reduce((n, e) => n + e.photos.length, 0);
+  const best = SPECIES.filter(s => isSeen(s.id)).reduce((m, s) => Math.max(m, s.rarity), 0);
+
+  const g = $('#statGrid');
+  g.textContent = '';
+  const stat = (k, v, sub) => {
+    const d = el('div','stat');
+    d.innerHTML = `<div class="stat-k">${k}</div><div class="stat-v">${v}</div><div class="stat-sub">${sub}</div>`;
+    return d;
+  };
+  g.appendChild(stat('Logged', logged, TOTAL - logged + ' still to find'));
+  g.appendChild(stat('Photographed', withPhotos, shots + (shots === 1 ? ' photo' : ' photos')));
+  g.appendChild(stat('Hardest find', best ? RARITY[best] : '—', best ? 'best tier reached' : 'nothing logged yet'));
+  g.appendChild(stat('Completion', (TOTAL ? Math.round(logged / TOTAL * 100) : 0) + '%', 'of the full checklist'));
+
+  const gb = $('#groupBars');
+  gb.textContent = '';
+  GROUPS.forEach(gr => {
+    const list = SPECIES.filter(s => s.group === gr.key);
+    gb.appendChild(bar(gr.name, seenCount(list), list.length));
+  });
+
+  const rb = $('#rarityBars');
+  rb.textContent = '';
+  [1,2,3,4].forEach(r => {
+    const list = SPECIES.filter(s => s.rarity === r);
+    rb.appendChild(bar(RARITY[r], seenCount(list), list.length, r === 3 ? 'gold' : r === 4 ? 'lilac' : ''));
+  });
+}
+
+/* ---------------- detail sheet ---------------- */
+let pendingTarget = null;
+
+async function openSheet(id){
+  S.open = id;
+  const sp = BY_ID.get(id);
+  const e = entry(id);
+  const sheet = $('#sheet');
+  sheet.hidden = false;
+  document.body.style.overflow = 'hidden';
+
+  const collTags = sp.colls.map(c => {
+    const col = COLLECTIONS.find(x => x.key === c);
+    return col ? `<span class="tag coll">${col.name}</span>` : '';
+  }).join('');
+
+  sheet.innerHTML = `
+    <div class="sheet-inner">
+      <div class="sheet-bar">
+        <button class="backbtn" id="sheetBack">${icon('back')} Checklist</button>
+      </div>
+      <div class="sheet-head">
+        <h2 id="sheetName">${sp.name}</h2>
+        <div class="sci">${sp.sci}</div>
+        <div class="rmeta">
+          <span class="tag r${sp.rarity}">${RARITY[sp.rarity]}</span>
+          <span class="tag coll">${GROUP_OF[sp.group].name}</span>
+          ${collTags}
+        </div>
+      </div>
+      <p class="blurb">${RARITY_NOTE[sp.rarity]}</p>
+      <div class="gallery" id="gallery"></div>
+      <div class="btnrow">
+        <button class="btn primary" id="btnCam">${icon('cam')} Take photo</button>
+        <button class="btn" id="btnPick">${icon('img')} From gallery</button>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="btnSeen"></button>
+      </div>
+      <div class="fields">
+        <div class="field"><label for="fDate">Date seen</label><input id="fDate" type="date" value="${e.date || ''}"></div>
+        <div class="field"><label for="fPlace">Where</label><input id="fPlace" type="text" placeholder="S100, Satara, Sunset Dam…" value="${(e.place||'').replace(/"/g,'&quot;')}"></div>
+        <div class="field"><label for="fNotes">Field notes</label><textarea id="fNotes" placeholder="Behaviour, herd size, light, who spotted it first…">${e.notes || ''}</textarea></div>
+      </div>
+    </div>`;
+
+  sheet.scrollTop = 0;
+  $('#sheetBack').addEventListener('click', closeSheet);
+  $('#btnCam').addEventListener('click', () => { pendingTarget = id; $('#fileCam').click(); });
+  $('#btnPick').addEventListener('click', () => { pendingTarget = id; $('#filePick').click(); });
+  $('#btnSeen').addEventListener('click', async () => {
+    const en = entry(id);
+    en.seen = !en.seen;
+    if(en.seen){ en.ts = Date.now(); if(!en.date) en.date = todayStr(); }
+    await saveEntry(en);
+    paintSeenBtn(id);
+    refreshAll();
+    toast(en.seen ? 'Logged — ' + sp.name : 'Removed from your list');
+  });
+
+  const persist = debounce(async () => {
+    const en = entry(id);
+    en.date = $('#fDate').value;
+    en.place = $('#fPlace').value.trim();
+    en.notes = $('#fNotes').value.trim();
+    await saveEntry(en);
+    refreshAll();
+  }, 400);
+  ['#fDate','#fPlace','#fNotes'].forEach(sel => $(sel).addEventListener('input', persist));
+
+  paintSeenBtn(id);
+  await paintGallery(id);
+}
+function paintSeenBtn(id){
+  const b = $('#btnSeen');
+  if(!b) return;
+  const seen = isSeen(id);
+  b.className = 'btn' + (seen ? '' : ' primary');
+  b.innerHTML = seen ? icon('check') + ' Logged — tap to undo' : icon('check') + ' Mark as seen';
+}
+async function paintGallery(id){
+  const box = $('#gallery');
+  if(!box) return;
+  const e = entry(id);
+  box.textContent = '';
+  for(const pid of e.photos){
+    const u = await urlsFor(pid);
+    if(!u) continue;
+    const fig = el('div','shot');
+    fig.innerHTML = `<img alt="Your photo of ${BY_ID.get(id).name}" src="${u.full}"><button class="del" aria-label="Delete photo">${icon('x')}</button>`;
+    fig.querySelector('.del').addEventListener('click', async ev => {
+      ev.stopPropagation();
+      const en = entry(id);
+      en.photos = en.photos.filter(p => p !== pid);
+      await dropPhoto(pid);
+      await saveEntry(en);
+      await paintGallery(id);
+      refreshAll();
+      toast('Photo deleted');
+    });
+    box.appendChild(fig);
+  }
+  const dz = el('div','dropzone', e.photos.length ? 'Add another' : 'No photo yet');
+  box.appendChild(dz);
+}
+function closeSheet(){
+  $('#sheet').hidden = true;
+  $('#sheet').textContent = '';
+  document.body.style.overflow = '';
+  S.open = null;
+}
+
+/* ---------------- shared refresh ---------------- */
+function refreshAll(){
+  renderTally();
+  if(S.view === 'list') renderList();
+  if(S.view === 'coll') renderCollections();
+  if(S.view === 'prog') renderProgress();
+}
+function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+/* ---------------- bridge for the wiring script ---------------- */
+Object.assign(window, {
+  __S: S,
+  __refresh: refreshAll,
+  __renderList: renderList,
+  __toast: (m) => toast(m),
+  __pending: () => pendingTarget,
+  __addPhotos: addPhotos,
+  __paintGallery: paintGallery,
+  __paintSeenBtn: paintSeenBtn,
+  __closeSheet: closeSheet,
+  __syncFields: id => {
+    const e = LOG.get(id); if(!e || S.open !== id) return;
+    const d = document.querySelector('#fDate');
+    if(d && !d.value && e.date) d.value = e.date;
+  },
+  __logRows: () => JSON.parse(JSON.stringify([...LOG.values()].filter(hasContent))),
+  __getPhoto: getPhoto,
+  __putPhoto: rec => pReq(tx('photos','readwrite').put(rec)),
+  __putLog: e => pReq(tx('log','readwrite').put(e)),
+  __reload: async () => { PHOTO_URLS.forEach(u => { URL.revokeObjectURL(u.full); URL.revokeObjectURL(u.thumb); }); PHOTO_URLS.clear(); LOG.clear(); await loadAll(); }
+});
+
+/* ---------------- boot ---------------- */
+(async function boot(){
+  try{
+    idb = await openDB();
+    await loadAll();
+  }catch(err){
+    useMem = true;
+    setTimeout(() => toast('Storage is blocked in this browser — ticks will not survive a reload.'), 900);
+  }
+  renderChips();
+  refreshAll();
+})();
+let toastTimer;
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(n => n.remove());
+  const t = el('div','toast', msg);
+  document.body.appendChild(t);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.remove(), 2600);
+}
+})();
+</script>
