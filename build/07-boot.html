@@ -155,6 +155,27 @@ async function doRestore(file){
 $('#fileRestore').addEventListener('change', e => { if(e.target.files[0]) doRestore(e.target.files[0]); e.target.value = ''; });
 
 /* ---------------- menu ---------------- */
+const mb = n => (n / 1048576) < 10 ? (n / 1048576).toFixed(1) : Math.round(n / 1048576);
+async function paintStorage(){
+  const line = $('#mStorage');
+  if(!line || !window.__storageReport) return;
+  const r = await window.__storageReport();
+  if(r.memory){
+    line.className = 'storageline warn';
+    line.textContent = 'This browser is blocking storage, so nothing will survive a reload. Private browsing usually causes this.';
+    return;
+  }
+  const used = r.usage ? mb(r.usage) + ' MB used' : 'nothing stored yet';
+  const room = r.quota ? ' of about ' + mb(r.quota) + ' MB available' : '';
+  if(r.durable === true){
+    line.className = 'storageline ok';
+    line.textContent = 'Storage is protected — ' + used + room + '. Android will not clear it to free space.';
+  } else {
+    line.className = 'storageline warn';
+    line.textContent = used.charAt(0).toUpperCase() + used.slice(1) + room +
+      '. Storage is not protected yet — add this to your home screen and open it a few times, and the browser will upgrade it automatically.';
+  }
+}
 function closeMenu(){
   document.querySelectorAll('.menu, .scrim').forEach(n => n.remove());
 }
@@ -169,6 +190,7 @@ $('#menuBtn').addEventListener('click', () => {
     <div class="menu-inner">
       <h3>Your list lives on this phone</h3>
       <p>Photos and ticks are stored in this browser only — nothing is uploaded, and it all works with no signal. Clearing your browser data erases it, so export a backup after a good trip.</p>
+      <p id="mStorage" class="storageline">Checking storage…</p>
       <div class="btnrow">
         <button class="btn primary" id="mExport">Export backup</button>
         <button class="btn" id="mRestore">Restore backup</button>
@@ -178,6 +200,7 @@ $('#menuBtn').addEventListener('click', () => {
     </div>`;
   document.body.appendChild(scrim);
   document.body.appendChild(m);
+  paintStorage();
   $('#mExport').addEventListener('click', doExport);
   $('#mRestore').addEventListener('click', () => $('#fileRestore').click());
   $('#mClose').addEventListener('click', closeMenu);

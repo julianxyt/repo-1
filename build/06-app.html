@@ -501,10 +501,35 @@ Object.assign(window, {
   },
   __logRows: () => JSON.parse(JSON.stringify([...LOG.values()].filter(hasContent))),
   __getPhoto: getPhoto,
+  __storageReport: storageReport,
+  __requestDurable: requestDurableStorage,
   __putPhoto: rec => pReq(tx('photos','readwrite').put(rec)),
   __putLog: e => pReq(tx('log','readwrite').put(e)),
   __reload: async () => { PHOTO_URLS.forEach(u => { URL.revokeObjectURL(u.full); URL.revokeObjectURL(u.thumb); }); PHOTO_URLS.clear(); LOG.clear(); await loadAll(); }
 });
+
+/* Without this the browser files the list as "best-effort" and may evict it when
+   the phone runs low on space. Chrome grants it silently once the app looks used
+   — added to the home screen, opened a few times — so ask on every start. */
+async function requestDurableStorage(){
+  try{
+    if(!navigator.storage || !navigator.storage.persist) return null;
+    if(await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  }catch(_){ return null; }
+}
+async function storageReport(){
+  const out = {durable:null, usage:0, quota:0, memory:useMem};
+  try{
+    if(navigator.storage && navigator.storage.persisted) out.durable = await navigator.storage.persisted();
+    if(navigator.storage && navigator.storage.estimate){
+      const est = await navigator.storage.estimate();
+      out.usage = est.usage || 0;
+      out.quota = est.quota || 0;
+    }
+  }catch(_){}
+  return out;
+}
 
 /* ---------------- boot ---------------- */
 (async function boot(){
@@ -517,6 +542,7 @@ Object.assign(window, {
   }
   renderChips();
   refreshAll();
+  if(!useMem) requestDurableStorage();
 })();
 let toastTimer;
 function toast(msg){
