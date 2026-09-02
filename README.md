@@ -1,9 +1,9 @@
 # Kruger Life List
 
-A field checklist of the animals of Kruger National Park — 543 species across
-mammals, birds, reptiles, amphibians, fish and invertebrates, including the small
-and overlooked ones. Tick off what you see, attach your own photos, watch the
-count climb.
+A field checklist of the animals of Kruger National Park — 414 species across
+mammals, birds, reptiles, amphibians and fish. Scoped to what you can realistically
+see from a vehicle. Tick off what you see, attach your own photos, watch the count
+climb.
 
 Built for how the park actually works: **everything is stored on the device**, so
 it opens and records sightings with no signal, which is most of Kruger.
@@ -48,7 +48,12 @@ status — so nocturnal species are rated on daytime odds, and a night drive mov
 them a long way in your favour.
 
 Species are cross-tagged into the lists Kruger regulars keep: the Big Five, the
-Little Five, the Secret Seven, the Ugly Five and the birding Big Six.
+Secret Seven, the Ugly Five and the birding Big Six.
+
+Anything smaller than a dwarf mongoose (~250 g) is deliberately excluded, because
+you cannot pick it out from a car. Birds are exempt from that rule — a sunbird is
+small but conspicuous. Invertebrates are excluded as a group for the same reason,
+along with bats, rodents, shrews, geckos, skinks and small snakes.
 
 ## Backups
 

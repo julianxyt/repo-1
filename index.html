@@ -411,13 +411,13 @@ button,input,select,textarea{font:inherit;color:inherit}
     </div>
     <p class="count-note" id="countNote"></p>
     <div id="listBody"></div>
-    <p class="footnote">Rarity reflects how likely you are to actually see the animal in Kruger — not its conservation status. Nocturnal and secretive species are rated on daytime odds, so a night drive shifts them a long way in your favour.</p>
+    <p class="footnote">Everything here is realistically spottable from a vehicle. Rarity reflects how likely you are to actually see the animal in Kruger, not its conservation status, and nocturnal species are rated on daytime odds — so a night drive shifts them a long way in your favour.</p>
   </section>
 
   <section id="view-coll" role="tabpanel" aria-labelledby="tab-coll" hidden>
     <div class="panel">
       <h2 class="section-title">Named sets<hr></h2>
-      <p class="section-note">The lists Kruger regulars actually keep. The Secret Seven and the Little Five are where the park gets interesting — none of them are hard to find because they are rare, only because nobody is looking.</p>
+      <p class="section-note">The lists Kruger regulars actually keep. The Secret Seven is where a trip gets interesting — none of those seven are hard to find because they are rare, only because nobody is looking.</p>
       <div id="collBody"></div>
     </div>
   </section>
@@ -450,13 +450,11 @@ const GROUPS = [
   {key:'bir', name:'Birds',      glyph:'AVE'},
   {key:'rep', name:'Reptiles',   glyph:'REP'},
   {key:'amp', name:'Amphibians', glyph:'AMP'},
-  {key:'fis', name:'Fish',       glyph:'PIS'},
-  {key:'inv', name:'Invertebrates', glyph:'INV'}
+  {key:'fis', name:'Fish',       glyph:'PIS'}
 ];
 
 const COLLECTIONS = [
   {key:'b5', name:'The Big Five',      note:'The colonial hunting list that became the safari benchmark — named for danger on foot, not for size. Both rhinos are listed separately, so this one runs to six.'},
-  {key:'l5', name:'The Little Five',   note:'Each one borrows a Big Five name. Finding all five takes more patience than the originals.'},
   {key:'s7', name:'The Secret Seven',  note:"Kruger's own list of the shy and the nocturnal. Most people leave the park having seen none of them."},
   {key:'u5', name:'The Ugly Five',     note:'Unfairly named. Between them they do most of the park’s actual work.'},
   {key:'b6', name:'The Birding Big Six', note:'Six large, scarce birds that Kruger birders measure a trip by. Pel’s Fishing Owl breaks most attempts.'}
@@ -483,7 +481,6 @@ Brown Hyena|Parahyaena brunnea|4|
 African Wild Dog|Lycaon pictus|3|
 Black-backed Jackal|Lupulella mesomelas|1|
 Side-striped Jackal|Lupulella adusta|3|
-Bat-eared Fox|Otocyon megalotis|3|
 Caracal|Caracal caracal|3|
 Serval|Leptailurus serval|3|s7
 African Wildcat|Felis lybica|2|s7
@@ -531,8 +528,6 @@ Chacma Baboon|Papio ursinus|1|
 Vervet Monkey|Chlorocebus pygerythrus|1|
 Samango Monkey|Cercopithecus albogularis|4|
 Thick-tailed Bushbaby|Otolemur crassicaudatus|2|
-Southern Lesser Galago|Galago moholi|2|
-Tree Squirrel|Paraxerus cepapi|1|
 Springhare|Pedetes capensis|2|
 Scrub Hare|Lepus saxatilis|1|
 Cape Hare|Lepus capensis|3|
@@ -542,124 +537,31 @@ Greater Cane Rat|Thryonomys swinderianus|3|
 Rock Hyrax|Procavia capensis|2|
 Yellow-spotted Rock Hyrax|Heterohyrax brucei|2|
 Southern Tree Hyrax|Dendrohyrax arboreus|4|
-Eastern Rock Elephant-shrew|Elephantulus myurus|2|l5
-Four-toed Elephant-shrew|Petrodromus tetradactylus|3|
 Southern African Hedgehog|Atelerix frontalis|4|
-Bushveld Gerbil|Gerbilliscus leucogaster|2|
-Woodland Dormouse|Graphiurus murinus|3|
-Four-striped Grass Mouse|Rhabdomys pumilio|2|
-Single-striped Grass Mouse|Lemniscomys rosalia|2|
-Natal Multimammate Mouse|Mastomys natalensis|1|
-African Pygmy Mouse|Mus minutoides|2|
-Fat Mouse|Steatomys pratensis|3|
-Red Veld Rat|Aethomys chrysophilus|2|
-Acacia Tree Rat|Thallomys paedulcus|2|
 Southern Giant Pouched Rat|Cricetomys ansorgei|3|
-Angoni Vlei Rat|Otomys angoniensis|3|
-Reddish-grey Musk Shrew|Crocidura cyanea|3|
-Lesser Red Musk Shrew|Crocidura hirta|3|
-Tiny Musk Shrew|Crocidura fuscomurina|4|
-Wahlberg's Epauletted Fruit Bat|Epomophorus wahlbergi|1|
-Peters's Epauletted Fruit Bat|Epomophorus crypturus|2|
-Egyptian Rousette|Rousettus aegyptiacus|2|
-Straw-coloured Fruit Bat|Eidolon helvum|3|
-Egyptian Free-tailed Bat|Tadarida aegyptiaca|1|
-Angolan Free-tailed Bat|Mops condylurus|1|
-Little Free-tailed Bat|Chaerephon pumilus|1|
-Yellow House Bat|Scotophilus dinganii|1|
-Cape Serotine|Neoromicia capensis|1|
-Banana Bat|Neoromicia nana|2|
-Schreibers's Long-fingered Bat|Miniopterus natalensis|2|
-Sundevall's Roundleaf Bat|Hipposideros caffer|2|
-Giant Leaf-nosed Bat|Macronycteris vittatus|3|
-Geoffroy's Horseshoe Bat|Rhinolophus clivosus|3|
-Darling's Horseshoe Bat|Rhinolophus darlingi|3|
-Hildebrandt's Horseshoe Bat|Rhinolophus hildebrandtii|3|
-Egyptian Slit-faced Bat|Nycteris thebaica|1|
-Wood's Slit-faced Bat|Nycteris woodi|4|
-African Trident Bat|Triaenops afer|4|
-Mauritian Tomb Bat|Taphozous mauritianus|2|
 `,
 rep:`
 Nile Crocodile|Crocodylus niloticus|1|
-Leopard Tortoise|Stigmochelys pardalis|1|l5
+Leopard Tortoise|Stigmochelys pardalis|1|
 Speke's Hinge-back Tortoise|Kinixys spekii|2|
 Serrated Hinged Terrapin|Pelusios sinuatus|1|
 Marsh Terrapin|Pelomedusa galeata|2|
 Nile Softshell Turtle|Trionyx triunguis|4|
 Water Monitor|Varanus niloticus|1|
 Rock Monitor|Varanus albigularis|2|
-Southern Tree Agama|Acanthocercus atricollis|1|
-Ground Agama|Agama aculeata|2|
-Flap-necked Chameleon|Chamaeleo dilepis|2|
-Common Dwarf Gecko|Lygodactylus capensis|1|
-Tropical House Gecko|Hemidactylus mabouia|1|
-Turner's Thick-toed Gecko|Chondrodactylus turneri|2|
-Van Son's Gecko|Pachydactylus vansoni|3|
-Striped Skink|Trachylepis striata|1|
-Rainbow Skink|Trachylepis margaritifera|1|
-Variable Skink|Trachylepis varia|2|
-Cape Skink|Trachylepis capensis|2|
-Wahlberg's Snake-eyed Skink|Panaspis wahlbergi|2|
-Yellow-throated Plated Lizard|Gerrhosaurus flavigularis|2|
 Giant Plated Lizard|Matobosaurus validus|2|
-Common Rough-scaled Lizard|Ichnotropis squamulosa|3|
-Bushveld Lizard|Heliobolus lugubris|3|
 African Rock Python|Python natalensis|2|
 Black Mamba|Dendroaspis polylepis|2|
 Mozambique Spitting Cobra|Naja mossambica|2|
 Snouted Cobra|Naja annulifera|2|
 Boomslang|Dispholidus typus|2|
-Southern Twig Snake|Thelotornis capensis|3|
 Puff Adder|Bitis arietans|2|
-Rhombic Night Adder|Causus rhombeatus|2|
-Snouted Night Adder|Causus defilippii|3|
-Bibron's Stiletto Snake|Atractaspis bibronii|3|
-Rhombic Egg-eater|Dasypeltis scabra|2|
-Southern Brown Egg-eater|Dasypeltis inornata|3|
-Brown House Snake|Boaedon capensis|1|
 Olive Grass Snake|Psammophis mossambicus|1|
-Stripe-bellied Sand Snake|Psammophis subtaeniatus|1|
-Short-snouted Grass Snake|Psammophis brevirostris|2|
-Spotted Bush Snake|Philothamnus semivariegatus|1|
-Green Water Snake|Philothamnus hoplogaster|2|
-Red-lipped Herald Snake|Crotaphopeltis hotamboeia|1|
-Common Wolf Snake|Lycophidion capense|2|
-Eastern Tiger Snake|Telescopus semiannulatus|2|
-Rufous Beaked Snake|Rhamphiophis rostratus|2|
 Mole Snake|Pseudaspis cana|3|
-Common Purple-glossed Snake|Amblyodipsas polylepis|3|
-Shield-nose Snake|Aspidelaps scutatus|3|
-Common Brown Water Snake|Lycodonomorphus rufulus|2|
-Bibron's Blind Snake|Afrotyphlops bibronii|3|
-Schlegel's Beaked Blind Snake|Afrotyphlops schlegelii|3|
-Peters's Thread Snake|Leptotyphlops scutifrons|3|
 `,
 amp:`
 African Bullfrog|Pyxicephalus adspersus|2|
 Edible Bullfrog|Pyxicephalus edulis|3|
-Southern Foam Nest Frog|Chiromantis xerampelina|1|
-Painted Reed Frog|Hyperolius marmoratus|1|
-Water Lily Reed Frog|Hyperolius pusillus|2|
-Tinker Reed Frog|Hyperolius tuberilinguis|2|
-Bubbling Kassina|Kassina senegalensis|1|
-Red-legged Kassina|Kassina maculata|2|
-Banded Rubber Frog|Phrynomantis bifasciatus|1|
-Bushveld Rain Frog|Breviceps adspersus|2|
-Mozambique Rain Frog|Breviceps mossambicus|3|
-Guttural Toad|Sclerophrys gutturalis|1|
-Olive Toad|Sclerophrys garmani|1|
-Raucous Toad|Sclerophrys capensis|2|
-Red Toad|Schismaderma carens|1|
-Common Platanna|Xenopus laevis|1|
-Muller's Platanna|Xenopus muelleri|2|
-Common River Frog|Amietia delalandii|1|
-Snoring Puddle Frog|Phrynobatrachus natalensis|1|
-Dwarf Puddle Frog|Phrynobatrachus mababiensis|2|
-Sharp-nosed Grass Frog|Ptychadena oxyrhynchus|1|
-Broad-banded Grass Frog|Ptychadena mossambica|2|
-Striped Stream Frog|Strongylopus fasciatus|2|
-Ornate Frog|Hildebrandtia ornata|3|
 `,
 fis:`
 Tigerfish|Hydrocynus vittatus|2|
@@ -667,46 +569,11 @@ Sharptooth Catfish|Clarias gariepinus|1|
 Silver Catfish|Schilbe intermedius|1|
 Mozambique Tilapia|Oreochromis mossambicus|1|
 Redbreast Tilapia|Coptodon rendalli|1|
-Southern Mouthbrooder|Pseudocrenilabrus philander|2|
 Lowveld Largemouth|Serranochromis meridianus|4|
-Silver Robber|Micralestes acutidens|1|
-Threespot Barb|Enteromius trimaculatus|1|
 Purple Labeo|Labeo congoro|2|
 Bulldog|Marcusenius pongolensis|2|
-Churchill|Petrocephalus catostoma|2|
 African Mottled Eel|Anguilla bengalensis|3|
 Longfin Eel|Anguilla mossambica|3|
-`,
-inv:`
-Antlion|Myrmeleontidae spp.|1|l5
-Rhinoceros Beetle|Oryctes boas|2|l5
-Flightless Dung Beetle|Circellium bacchus|2|
-Large Dung Beetle|Scarabaeus spp.|1|
-Fungus-growing Termite|Macrotermes natalensis|1|
-Matabele Ant|Megaponera analis|2|
-Golden Orb-web Spider|Trichonephila fenestrata|1|
-Horned Baboon Spider|Ceratogyrus darlingi|3|
-Rain Spider|Palystes superciliosus|1|
-Granulated Thick-tailed Scorpion|Parabuthus granulatus|3|
-Mozambique Thick-tailed Scorpion|Parabuthus mossambicensis|2|
-Rock Scorpion|Opistophthalmus glabrifrons|2|
-Sun Spider|Solifugae spp.|2|
-Mopane Emperor Moth|Gonimbrasia belina|1|
-African Monarch|Danaus chrysippus|1|
-Citrus Swallowtail|Papilio demodocus|1|
-Mocker Swallowtail|Papilio dardanus|2|
-Foxy Charaxes|Charaxes jasius saturnus|2|
-Brown-veined White|Belenois aurota|1|
-Blue Emperor Dragonfly|Anax imperator|1|
-African Giant Millipede|Archispirostreptus gigas|1|
-Armoured Ground Cricket|Enyaliopsis spp.|2|
-Common Green Mantis|Sphodromantis gastrica|2|
-African Stick Insect|Phasmatodea spp.|2|
-Bushveld Cicada|Platypleura spp.|1|
-Assassin Bug|Reduviidae spp.|2|
-Giant African Land Snail|Achatina immaculata|1|
-Freshwater Crab|Potamonautes spp.|1|
-Velvet Mite|Trombidiidae spp.|1|
 `
 };
 </script>
