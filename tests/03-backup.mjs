@@ -13,7 +13,7 @@ await p.waitForTimeout(900);
 // log three species, one with photos
 for (const q of ['pangolin','lilac-breasted','honey badger']) {
   await p.fill('#search', q); await p.waitForTimeout(350);
-  await p.locator('.row').first().click(); await p.waitForTimeout(250);
+  await p.locator('.dex').first().click(); await p.waitForTimeout(250);
   if (q === 'pangolin') { await p.locator('#btnPick').click(); await p.setInputFiles('#filePick', [SP+'leopard.png']); await p.waitForTimeout(1800); }
   else { await p.locator('#btnSeen').click(); await p.waitForTimeout(300); }
   await p.locator('#sheetBack').click(); await p.waitForTimeout(200);
@@ -45,7 +45,7 @@ console.log('after restore:', await p.textContent('#tallySeen'), 'logged');
 console.log('toast:', await p.locator('.toast').count() ? await p.textContent('.toast') : '(none)');
 
 await p.selectOption('#sort','recent'); await p.waitForTimeout(500);
-console.log('restored + recent-first:', await p.evaluate(() => [...document.querySelectorAll('.rname')].slice(0,4).map(n=>n.textContent)));
+console.log('restored + recent-first:', await p.evaluate(() => [...document.querySelectorAll('.dex-name')].slice(0,4).map(n=>n.textContent)));
 console.log('photo survived restore:', await p.locator('.thumb img').count());
 await p.reload(); await p.waitForTimeout(1000);
 console.log('after reload:', await p.textContent('#tallySeen'), 'logged');

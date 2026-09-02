@@ -19,6 +19,7 @@ GROUPS.forEach((g, gi) => {
     });
   });
 });
+SPECIES.forEach((sp, i) => { sp.no = String(i + 1).padStart(3, '0'); });
 const BY_ID = new Map(SPECIES.map(s => [s.id, s]));
 const TOTAL = SPECIES.length;
 const GROUP_OF = Object.fromEntries(GROUPS.map(g => [g.key, g]));
@@ -220,39 +221,41 @@ function rowFor(sp){
   const e = LOG.get(sp.id);
   const seen = !!(e && e.seen);
   const li = el('li');
-  const row = el('button', 'row' + (seen ? ' is-seen' : ''));
-  row.type = 'button';
-  row.setAttribute('aria-label', sp.name + (seen ? ', logged' : ', not yet logged'));
+  const card = el('button', 'dex' + (seen ? ' is-seen' : ''));
+  card.type = 'button';
+  card.setAttribute('aria-label', sp.name + (seen ? ', recorded' : ', not yet recorded'));
 
-  const thumb = el('div','thumb');
-  thumb.innerHTML = `<span class="glyph">${GROUP_OF[sp.group].glyph}</span>`;
+  const top = el('div','dex-top');
+  top.innerHTML = `<span class="dex-no">No.${sp.no}</span><span class="ball"></span>`;
+  card.appendChild(top);
+
+  const win = el('div','shotwin');
+  win.innerHTML = `<span class="glyph">${GROUP_OF[sp.group].glyph}</span>`;
   if(e && e.photos.length){
     urlsFor(e.photos[0]).then(u => {
       if(!u) return;
-      thumb.innerHTML = `<img alt="" src="${u.thumb}">`;
-      if(e.photos.length > 1) thumb.insertAdjacentHTML('beforeend', `<span class="multi">${e.photos.length}</span>`);
+      win.innerHTML = `<img alt="" src="${u.thumb}">`;
+      if(e.photos.length > 1) win.insertAdjacentHTML('beforeend', `<span class="multi">${e.photos.length}</span>`);
     });
+  } else if(seen){
+    win.insertAdjacentHTML('beforeend', '<span class="nophoto">SEEN · NO PHOTO</span>');
   }
-  row.appendChild(thumb);
+  card.appendChild(win);
 
-  const body = el('div','rowbody');
-  body.appendChild(el('span','rname', sp.name));
-  body.appendChild(el('span','rsci', sp.sci));
-  const meta = el('div','rmeta');
-  meta.appendChild(el('span','tag r' + sp.rarity, RARITY[sp.rarity]));
+  const body = el('div','dex-body');
+  body.appendChild(el('div','dex-name', sp.name));
+  body.appendChild(el('div','dex-sci', sp.sci));
+  const chips = el('div','chips');
+  chips.appendChild(el('span','tag r' + sp.rarity, RARITY[sp.rarity]));
   sp.colls.forEach(c => {
     const col = COLLECTIONS.find(x => x.key === c);
-    if(col) meta.appendChild(el('span','tag coll', col.name.replace(/^The /,'')));
+    if(col) chips.appendChild(el('span','tag coll', col.name.replace(/^The /,'')));
   });
-  body.appendChild(meta);
-  row.appendChild(body);
+  body.appendChild(chips);
+  card.appendChild(body);
 
-  const tick = el('span','tick');
-  tick.innerHTML = icon('check');
-  row.appendChild(tick);
-
-  row.addEventListener('click', () => openSheet(sp.id));
-  li.appendChild(row);
+  card.addEventListener('click', () => openSheet(sp.id));
+  li.appendChild(card);
   return li;
 }
 
@@ -280,13 +283,13 @@ function renderList(){
       const h = el('div','grouphead');
       h.innerHTML = `<h2>${g.name}</h2><span class="gcount">${seenCount(chunk)}/${chunk.length}</span><hr>`;
       body.appendChild(h);
-      const ul = el('ul','list');
+      const ul = el('ul','dexgrid');
       chunk.forEach(s => ul.appendChild(rowFor(s)));
       body.appendChild(ul);
     });
   } else {
-    const ul = el('ul','list');
-    ul.style.marginTop = '10px';
+    const ul = el('ul','dexgrid');
+    ul.style.marginTop = '12px';
     rows.forEach(s => ul.appendChild(rowFor(s)));
     body.appendChild(ul);
   }
@@ -382,30 +385,30 @@ async function openSheet(id){
   sheet.innerHTML = `
     <div class="sheet-inner">
       <div class="sheet-bar">
-        <button class="backbtn" id="sheetBack">${icon('back')} Checklist</button>
+        <button class="backbtn" id="sheetBack">${icon('back')} Dex</button>
+        <span class="sheet-no">No.${sp.no}</span>
       </div>
-      <div class="sheet-head">
+      <div class="entry">
+        <div class="bigshot" id="bigshot"><span class="glyph">${GROUP_OF[sp.group].glyph}</span></div>
         <h2 id="sheetName">${sp.name}</h2>
         <div class="sci">${sp.sci}</div>
-        <div class="rmeta">
+        <div class="chips">
           <span class="tag r${sp.rarity}">${RARITY[sp.rarity]}</span>
           <span class="tag coll">${GROUP_OF[sp.group].name}</span>
           ${collTags}
         </div>
-      </div>
-      <p class="blurb">${RARITY_NOTE[sp.rarity]}</p>
-      <div class="gallery" id="gallery"></div>
-      <div class="btnrow">
-        <button class="btn primary" id="btnCam">${icon('cam')} Take photo</button>
-        <button class="btn" id="btnPick">${icon('img')} From gallery</button>
-      </div>
-      <div class="btnrow">
-        <button class="btn" id="btnSeen"></button>
-      </div>
-      <div class="fields">
-        <div class="field"><label for="fDate">Date seen</label><input id="fDate" type="date" value="${e.date || ''}"></div>
-        <div class="field"><label for="fPlace">Where</label><input id="fPlace" type="text" placeholder="S100, Satara, Sunset Dam…" value="${(e.place||'').replace(/"/g,'&quot;')}"></div>
-        <div class="field"><label for="fNotes">Field notes</label><textarea id="fNotes" placeholder="Behaviour, herd size, light, who spotted it first…">${e.notes || ''}</textarea></div>
+        <p class="blurb">${RARITY_NOTE[sp.rarity]}</p>
+        <div class="btnrow">
+          <button class="btn primary" id="btnCam">${icon('cam')} Take photo</button>
+          <button class="btn" id="btnPick">${icon('img')} From gallery</button>
+        </div>
+        <div class="btnrow"><button class="btn" id="btnSeen"></button></div>
+        <div class="gallery" id="gallery"></div>
+        <div class="fields">
+          <div class="field"><label for="fDate">Date seen</label><input id="fDate" type="date" value="${e.date || ''}"></div>
+          <div class="field"><label for="fPlace">Where</label><input id="fPlace" type="text" placeholder="S100, Lower Sabie, Sunset Dam…" value="${(e.place||'').replace(/"/g,'&quot;')}"></div>
+          <div class="field"><label for="fNotes">Field notes</label><textarea id="fNotes" placeholder="Behaviour, herd size, light, who spotted it first…">${e.notes || ''}</textarea></div>
+        </div>
       </div>
     </div>`;
 
@@ -447,6 +450,15 @@ async function paintGallery(id){
   const box = $('#gallery');
   if(!box) return;
   const e = entry(id);
+  const big = $('#bigshot');
+  if(big){
+    if(e.photos.length){
+      const u = await urlsFor(e.photos[0]);
+      if(u) big.innerHTML = `<img alt="Your photo of ${BY_ID.get(id).name}" src="${u.full}">`;
+    } else {
+      big.innerHTML = `<span class="glyph">${GROUP_OF[BY_ID.get(id).group].glyph}</span>`;
+    }
+  }
   box.textContent = '';
   for(const pid of e.photos){
     const u = await urlsFor(pid);

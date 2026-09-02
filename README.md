@@ -1,9 +1,9 @@
 # Kruger Life List
 
-A field checklist of the animals of Kruger National Park — 414 species across
-mammals, birds, reptiles, amphibians and fish. Scoped to what you can realistically
-see from a vehicle. Tick off what you see, attach your own photos, watch the count
-climb.
+A field checklist for **southern Kruger National Park** — 251 species across
+mammals, birds, reptiles, amphibians and fish, scoped to what you can realistically
+pick out from a vehicle. Numbered dex entries, a photo per species, and a running
+count of how many are left.
 
 Built for how the park actually works: **everything is stored on the device**, so
 it opens and records sightings with no signal, which is most of Kruger.
@@ -50,10 +50,19 @@ them a long way in your favour.
 Species are cross-tagged into the lists Kruger regulars keep: the Big Five, the
 Secret Seven, the Ugly Five and the birding Big Six.
 
-Anything smaller than a dwarf mongoose (~250 g) is deliberately excluded, because
-you cannot pick it out from a car. Birds are exempt from that rule — a sunbird is
-small but conspicuous. Invertebrates are excluded as a group for the same reason,
-along with bats, rodents, shrews, geckos, skinks and small snakes.
+Two filters have been applied to the full park list:
+
+1. **Size** — anything under a dwarf mongoose (~250 g) is out, because you cannot
+   pick it out from a car. Birds are exempt: a sunbird is small but conspicuous.
+   Invertebrates go as a group, along with bats, rodents, shrews, geckos and small
+   snakes.
+2. **Range** — northern and far-north species are out (samango, suni, roan,
+   tsessebe, Lichtenstein's hartebeest, tree hyrax, and the northern birds).
+   Rarity is re-rated for the south specifically, so sable and oribi read as more
+   findable here than they would park-wide, while kori bustard reads as harder.
+
+Birds are further cut to the large, loud and brightly coloured — the little brown
+jobs that need a scope and an hour are gone.
 
 ## Backups
 

@@ -14,7 +14,7 @@ await page.waitForTimeout(1200);
 const stats = await page.evaluate(() => ({
   total: document.querySelector('#tallyTot').textContent,
   seen: document.querySelector('#tallySeen').textContent,
-  rows: document.querySelectorAll('.row').length,
+  rows: document.querySelectorAll('.dex').length,
   groups: [...document.querySelectorAll('.grouphead')].map(h => h.querySelector('h2').textContent + ' ' + h.querySelector('.gcount').textContent),
   chips: [...document.querySelectorAll('.chip')].map(c => c.textContent.trim()),
   railSegs: document.querySelectorAll('.rail-seg').length,
@@ -25,12 +25,12 @@ console.log('BOOT', JSON.stringify(stats, null, 1));
 // duplicate id check
 const dupes = await page.evaluate(() => {
   const ids = {}; const out = [];
-  document.querySelectorAll('.row .rname').forEach(n => {});
+  document.querySelectorAll('.dex .dex-name').forEach(n => {});
   return out;
 });
 
 // tick a species, verify counter + persistence
-await page.locator('.row').first().click();
+await page.locator('.dex').first().click();
 await page.waitForTimeout(300);
 const sheetName = await page.locator('#sheetName').textContent();
 await page.locator('#btnSeen').click();
@@ -40,7 +40,7 @@ await page.waitForTimeout(300);
 const afterTick = await page.evaluate(() => document.querySelector('#tallySeen').textContent);
 
 // notes persistence
-await page.locator('.row').first().click();
+await page.locator('.dex').first().click();
 await page.waitForTimeout(250);
 await page.fill('#fPlace','S100 loop');
 await page.fill('#fNotes','Big male, sleeping under a marula.');
@@ -61,7 +61,7 @@ console.log('PERSISTED', JSON.stringify(persisted));
 // search + filters
 await page.fill('#search','pangolin');
 await page.waitForTimeout(400);
-console.log('SEARCH pangolin ->', await page.evaluate(() => [...document.querySelectorAll('.rname')].map(n=>n.textContent)));
+console.log('SEARCH pangolin ->', await page.evaluate(() => [...document.querySelectorAll('.dex-name')].map(n=>n.textContent)));
 await page.fill('#search','');
 await page.waitForTimeout(300);
 await page.locator('[data-status="todo"]').click();
@@ -70,7 +70,7 @@ console.log('TODO note ->', await page.textContent('#countNote'));
 await page.locator('[data-status="all"]').click();
 await page.selectOption('#sort','rarity');
 await page.waitForTimeout(400);
-console.log('HARDEST FIRST ->', await page.evaluate(() => [...document.querySelectorAll('.rname')].slice(0,4).map(n=>n.textContent)));
+console.log('HARDEST FIRST ->', await page.evaluate(() => [...document.querySelectorAll('.dex-name')].slice(0,4).map(n=>n.textContent)));
 await page.selectOption('#sort','taxo');
 await page.waitForTimeout(300);
 

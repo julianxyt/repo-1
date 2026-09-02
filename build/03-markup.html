@@ -12,31 +12,35 @@
 </svg>
 
 <div class="app">
-  <header class="masthead">
-    <div class="mast-top">
-      <div class="wordmark"><span class="wm-1">Kruger</span><span class="wm-2">Life List</span></div>
-      <div class="mast-tools">
+  <header class="deck">
+    <div class="deck-top">
+      <div class="lamp-big" aria-hidden="true"></div>
+      <div class="lamps" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="title">
+        <b>Kruger Life List</b>
+        <span>Southern section field index</span>
+      </div>
+      <div class="deck-tools">
         <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme"><svg><use href="#i-sun"/></svg></button>
         <button class="icon-btn" id="menuBtn" title="Backup and settings" aria-label="Backup and settings"><svg><use href="#i-menu"/></svg></button>
       </div>
     </div>
-    <div class="tally">
-      <span class="tally-num" id="tallySeen">0</span>
-      <span class="tally-slash">/</span>
-      <span class="tally-tot" id="tallyTot">0</span>
-      <span class="tally-label">logged</span>
-      <span class="tally-pct" id="tallyPct">0%</span>
+    <div class="readout">
+      <span class="big" id="tallySeen">0</span>
+      <span class="of">/</span><span class="of" id="tallyTot">0</span>
+      <span class="lbl">recorded</span>
+      <span class="pct" id="tallyPct">0%</span>
     </div>
     <div class="rail" id="rail" aria-hidden="true"></div>
   </header>
 
-  <nav class="viewtabs" role="tablist" aria-label="Views">
-    <button class="viewtab" role="tab" id="tab-list" aria-selected="true" data-view="list">Checklist</button>
+<nav class="viewtabs" role="tablist" aria-label="Views">
+    <button class="viewtab" role="tab" id="tab-list" aria-selected="true" data-view="list">Dex</button>
     <button class="viewtab" role="tab" id="tab-coll" aria-selected="false" data-view="coll">Collections</button>
     <button class="viewtab" role="tab" id="tab-prog" aria-selected="false" data-view="prog">Progress</button>
   </nav>
 
-  <section id="view-list" role="tabpanel" aria-labelledby="tab-list">
+  <section id="view-list" class="screen" role="tabpanel" aria-labelledby="tab-list">
     <div class="controls">
       <div class="search-wrap">
         <svg><use href="#i-search"/></svg>
@@ -60,18 +64,18 @@
     </div>
     <p class="count-note" id="countNote"></p>
     <div id="listBody"></div>
-    <p class="footnote">Everything here is realistically spottable from a vehicle. Rarity reflects how likely you are to actually see the animal in Kruger, not its conservation status, and nocturnal species are rated on daytime odds — so a night drive shifts them a long way in your favour.</p>
+    <p class="footnote">Scoped to southern Kruger — Malelane, Berg-en-Dal, Pretoriuskop, Skukuza, Lower Sabie, Crocodile Bridge — and to what you can pick out from a vehicle. Rarity is rated for this section of the park specifically, so a species that is common up north may read as rare here.</p>
   </section>
 
-  <section id="view-coll" role="tabpanel" aria-labelledby="tab-coll" hidden>
+  <section id="view-coll" class="screen" role="tabpanel" aria-labelledby="tab-coll" hidden>
     <div class="panel">
       <h2 class="section-title">Named sets<hr></h2>
-      <p class="section-note">The lists Kruger regulars actually keep. The Secret Seven is where a trip gets interesting — none of those seven are hard to find because they are rare, only because nobody is looking.</p>
+      <p class="section-note">The lists Kruger regulars actually keep. The Secret Seven is where a trip gets interesting — none of those seven are hard to find because they are rare, only because nobody is looking. All seven are in the south.</p>
       <div id="collBody"></div>
     </div>
   </section>
 
-  <section id="view-prog" role="tabpanel" aria-labelledby="tab-prog" hidden>
+  <section id="view-prog" class="screen" role="tabpanel" aria-labelledby="tab-prog" hidden>
     <div class="panel">
       <div class="statgrid" id="statGrid"></div>
       <h2 class="section-title">By group<hr></h2>

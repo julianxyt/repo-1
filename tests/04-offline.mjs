@@ -14,16 +14,16 @@ const man = await p.evaluate(async () => (await fetch('manifest.webmanifest')).j
 console.log('manifest:', man.name, '|', man.display, '| icons:', man.icons.length);
 
 // tick something, then go fully offline and reload — the Kruger scenario
-await p.locator('.row').first().click(); await p.waitForTimeout(300);
+await p.locator('.dex').first().click(); await p.waitForTimeout(300);
 await p.locator('#btnSeen').click(); await p.waitForTimeout(400);
 await p.locator('#sheetBack').click(); await p.waitForTimeout(300);
 await ctx.setOffline(true);
 await p.reload();
 await p.waitForTimeout(2000);
 console.log('OFFLINE reload -> total:', await p.textContent('#tallyTot'), '| logged:', await p.textContent('#tallySeen'));
-console.log('OFFLINE rows rendered:', await p.locator('.row').count());
+console.log('OFFLINE rows rendered:', await p.locator('.dex').count());
 // can we still tick while offline?
-await p.locator('.row').nth(2).click(); await p.waitForTimeout(300);
+await p.locator('.dex').nth(2).click(); await p.waitForTimeout(300);
 await p.locator('#btnSeen').click(); await p.waitForTimeout(400);
 await p.locator('#sheetBack').click(); await p.waitForTimeout(300);
 console.log('OFFLINE tick works -> logged:', await p.textContent('#tallySeen'));

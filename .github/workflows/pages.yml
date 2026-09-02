@@ -3,7 +3,7 @@ name: Deploy Kruger Life List to Pages
 on:
   push:
     branches: [master, claude/kruger-wildlife-checklist-6gga2w]
-    paths: ['index.html', 'sw.js', 'icon.svg', 'manifest.webmanifest', '.github/workflows/pages.yml']
+    paths: ['index.html', 'sw.js', 'icon.svg', 'manifest.webmanifest', 'build/**', 'build.sh', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:

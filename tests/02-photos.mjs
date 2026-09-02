@@ -12,7 +12,7 @@ await p.waitForTimeout(1000);
 // open Leopard
 await p.fill('#search','leopard');
 await p.waitForTimeout(400);
-await p.locator('.row').first().click();
+await p.locator('.dex').first().click();
 await p.waitForTimeout(300);
 console.log('opened:', await p.textContent('#sheetName'));
 
@@ -52,7 +52,7 @@ console.log('backup bytes:', json.length, '| entries:', JSON.parse(json).log.len
 
 // delete one photo
 await p.fill('#search','leopard'); await p.waitForTimeout(400);
-await p.locator('.row').first().click(); await p.waitForTimeout(400);
+await p.locator('.dex').first().click(); await p.waitForTimeout(400);
 await p.locator('.shot .del').first().click();
 await p.waitForTimeout(800);
 console.log('shots after delete:', await p.locator('.shot').count());
