@@ -1,0 +1,94 @@
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3.2L13 4.6" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 16 16"><path d="M9.5 3L5 8l4.5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 16 16"><path d="M1.6 5.2h2.6l1.1-1.6h5.4l1.1 1.6h2.6v7.6H1.6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="8" cy="9" r="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <symbol id="i-img" viewBox="0 0 16 16"><rect x="1.6" y="3" width="12.8" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M1.8 10.6l3.4-3 2.6 2.3 2.6-2.6 3.6 3.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 16 16"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 .9v2M8 13.1v2M.9 8h2M13.1 8h2M3 3l1.4 1.4M11.6 11.6L13 13M13 3l-1.4 1.4M4.4 11.6L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="deck">
+    <div class="deck-top">
+      <div class="lamp-big" aria-hidden="true"></div>
+      <div class="lamps" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="title">
+        <b>Kruger Life List</b>
+        <span>Southern section field index</span>
+      </div>
+      <div class="deck-tools">
+        <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme"><svg><use href="#i-sun"/></svg></button>
+        <button class="icon-btn" id="menuBtn" title="Backup and settings" aria-label="Backup and settings"><svg><use href="#i-menu"/></svg></button>
+      </div>
+    </div>
+    <div class="readout">
+      <span class="big" id="tallySeen">0</span>
+      <span class="of">/</span><span class="of" id="tallyTot">0</span>
+      <span class="lbl">recorded</span>
+      <span class="pct" id="tallyPct">0%</span>
+    </div>
+    <div class="rail" id="rail" aria-hidden="true"></div>
+  </header>
+
+<nav class="viewtabs" role="tablist" aria-label="Views">
+    <button class="viewtab" role="tab" id="tab-list" aria-selected="true" data-view="list">Dex</button>
+    <button class="viewtab" role="tab" id="tab-coll" aria-selected="false" data-view="coll">Collections</button>
+    <button class="viewtab" role="tab" id="tab-prog" aria-selected="false" data-view="prog">Progress</button>
+  </nav>
+
+  <section id="view-list" class="screen" role="tabpanel" aria-labelledby="tab-list">
+    <div class="controls">
+      <div class="search-wrap">
+        <svg><use href="#i-search"/></svg>
+        <input id="search" type="search" placeholder="Search name, binomial or group" autocomplete="off" spellcheck="false" aria-label="Search species">
+        <button class="clear-search" id="clearSearch" hidden aria-label="Clear search"><svg><use href="#i-x"/></svg></button>
+      </div>
+      <div class="chiprow" id="groupChips" role="group" aria-label="Filter by group"></div>
+      <div class="filterbar">
+        <div class="seg" role="group" aria-label="Filter by status">
+          <button data-status="all" aria-pressed="true">All</button>
+          <button data-status="seen" aria-pressed="false">Logged</button>
+          <button data-status="todo" aria-pressed="false">To find</button>
+        </div>
+        <select id="sort" aria-label="Sort order">
+          <option value="taxo">Taxonomic</option>
+          <option value="az">A–Z</option>
+          <option value="rarity">Hardest first</option>
+          <option value="recent">Recently logged</option>
+        </select>
+      </div>
+    </div>
+    <p class="count-note" id="countNote"></p>
+    <div id="listBody"></div>
+    <p class="footnote">Scoped to southern Kruger — Malelane, Berg-en-Dal, Pretoriuskop, Skukuza, Lower Sabie, Crocodile Bridge — and to what you can pick out from a vehicle. Rarity is rated for this section of the park specifically, so a species that is common up north may read as rare here.</p>
+  </section>
+
+  <section id="view-coll" class="screen" role="tabpanel" aria-labelledby="tab-coll" hidden>
+    <div class="panel">
+      <h2 class="section-title">Named sets<hr></h2>
+      <p class="section-note">The lists Kruger regulars actually keep. The Secret Seven is where a trip gets interesting — none of those seven are hard to find because they are rare, only because nobody is looking. All seven are in the south.</p>
+      <div id="collBody"></div>
+    </div>
+  </section>
+
+  <section id="view-prog" class="screen" role="tabpanel" aria-labelledby="tab-prog" hidden>
+    <div class="panel">
+      <div class="statgrid" id="statGrid"></div>
+      <h2 class="section-title">By group<hr></h2>
+      <div class="bars" id="groupBars"></div>
+      <h2 class="section-title">By difficulty<hr></h2>
+      <p class="section-note">Everyone finishes the common column. The last three are the ones that take years.</p>
+      <div class="bars" id="rarityBars"></div>
+      <p class="footnote">Everything is stored on this device only — no account, no upload, nothing leaves your phone. That also means clearing your browser data wipes it, so export a backup after a good trip.</p>
+    </div>
+  </section>
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetName"></div>
+<input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="filePick" accept="image/*" multiple hidden>
+<input type="file" id="fileRestore" accept="application/json,.json" hidden>

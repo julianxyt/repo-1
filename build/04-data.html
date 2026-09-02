@@ -1,0 +1,123 @@
+<script>
+/* ------------------------------------------------------------------
+   The checklist. One line per species:
+     Common name | Scientific name | rarity 1-4 | collection keys
+   Rarity: 1 common · 2 uncommon · 3 rare · 4 very rare (daytime odds)
+------------------------------------------------------------------ */
+const GROUPS = [
+  {key:'mam', name:'Mammals',    glyph:'MAM'},
+  {key:'bir', name:'Birds',      glyph:'AVE'},
+  {key:'rep', name:'Reptiles',   glyph:'REP'},
+  {key:'amp', name:'Amphibians', glyph:'AMP'},
+  {key:'fis', name:'Fish',       glyph:'PIS'}
+];
+
+const COLLECTIONS = [
+  {key:'b5', name:'The Big Five',      note:'The colonial hunting list that became the safari benchmark — named for danger on foot, not for size. Both rhinos are listed separately, so this one runs to six.'},
+  {key:'s7', name:'The Secret Seven',  note:"Kruger's own list of the shy and the nocturnal. Most people leave the park having seen none of them."},
+  {key:'u5', name:'The Ugly Five',     note:'Unfairly named. Between them they do most of the park’s actual work.'},
+  {key:'b6', name:'The Birding Big Six', note:'Six large, scarce birds that Kruger birders measure a trip by. Pel’s Fishing Owl breaks most attempts.'}
+];
+
+const RARITY = ['','Common','Uncommon','Rare','Very rare'];
+
+const RAW = {
+mam:`
+African Bush Elephant|Loxodonta africana|1|b5
+Lion|Panthera leo|1|b5
+Leopard|Panthera pardus|2|b5
+Cape Buffalo|Syncerus caffer|1|b5
+White Rhinoceros|Ceratotherium simum|3|b5
+Black Rhinoceros|Diceros bicornis|4|b5
+Hippopotamus|Hippopotamus amphibius|1|
+Giraffe|Giraffa camelopardalis|1|
+Plains Zebra|Equus quagga burchellii|1|
+Common Warthog|Phacochoerus africanus|1|u5
+Bushpig|Potamochoerus larvatus|3|
+Cheetah|Acinonyx jubatus|3|
+Spotted Hyena|Crocuta crocuta|1|u5
+African Wild Dog|Lycaon pictus|3|
+Black-backed Jackal|Lupulella mesomelas|1|
+Side-striped Jackal|Lupulella adusta|4|
+Caracal|Caracal caracal|3|
+Serval|Leptailurus serval|3|s7
+African Wildcat|Felis lybica|2|s7
+Aardvark|Orycteropus afer|4|s7
+Aardwolf|Proteles cristatus|4|
+Ground Pangolin|Smutsia temminckii|4|s7
+Honey Badger|Mellivora capensis|3|
+African Civet|Civettictis civetta|2|s7
+Large-spotted Genet|Genetta maculata|1|s7
+Small-spotted Genet|Genetta genetta|2|
+Cape Porcupine|Hystrix africaeaustralis|2|s7
+Cape Clawless Otter|Aonyx capensis|3|
+Striped Polecat|Ictonyx striatus|3|
+African Striped Weasel|Poecilogale albinucha|4|
+Banded Mongoose|Mungos mungo|1|
+Dwarf Mongoose|Helogale parvula|1|
+Slender Mongoose|Herpestes sanguineus|1|
+White-tailed Mongoose|Ichneumia albicauda|2|
+Marsh Mongoose|Atilax paludinosus|3|
+Large Grey Mongoose|Herpestes ichneumon|3|
+Impala|Aepyceros melampus|1|
+Greater Kudu|Tragelaphus strepsiceros|1|
+Blue Wildebeest|Connochaetes taurinus|1|u5
+Waterbuck|Kobus ellipsiprymnus|1|
+Nyala|Tragelaphus angasii|1|
+Bushbuck|Tragelaphus sylvaticus|1|
+Common Duiker|Sylvicapra grimmia|1|
+Red Duiker|Cephalophus natalensis|4|
+Steenbok|Raphicerus campestris|1|
+Sharpe's Grysbok|Raphicerus sharpei|4|
+Klipspringer|Oreotragus oreotragus|2|
+Oribi|Ourebia ourebi|3|
+Sable Antelope|Hippotragus niger|3|
+Common Eland|Taurotragus oryx|4|
+Southern Reedbuck|Redunca arundinum|3|
+Mountain Reedbuck|Redunca fulvorufula|4|
+Chacma Baboon|Papio ursinus|1|
+Vervet Monkey|Chlorocebus pygerythrus|1|
+Thick-tailed Bushbaby|Otolemur crassicaudatus|2|
+Springhare|Pedetes capensis|2|
+Scrub Hare|Lepus saxatilis|1|
+Smith's Red Rock Rabbit|Pronolagus rupestris|3|
+Greater Cane Rat|Thryonomys swinderianus|3|
+Rock Hyrax|Procavia capensis|2|
+Southern Giant Pouched Rat|Cricetomys ansorgei|3|
+`,
+rep:`
+Nile Crocodile|Crocodylus niloticus|1|
+Leopard Tortoise|Stigmochelys pardalis|1|
+Speke's Hinge-back Tortoise|Kinixys spekii|2|
+Serrated Hinged Terrapin|Pelusios sinuatus|1|
+Marsh Terrapin|Pelomedusa galeata|2|
+Water Monitor|Varanus niloticus|1|
+Rock Monitor|Varanus albigularis|2|
+Giant Plated Lizard|Matobosaurus validus|2|
+African Rock Python|Python natalensis|2|
+Black Mamba|Dendroaspis polylepis|2|
+Mozambique Spitting Cobra|Naja mossambica|2|
+Snouted Cobra|Naja annulifera|2|
+Boomslang|Dispholidus typus|2|
+Puff Adder|Bitis arietans|2|
+Olive Grass Snake|Psammophis mossambicus|1|
+Mole Snake|Pseudaspis cana|3|
+`,
+amp:`
+African Bullfrog|Pyxicephalus adspersus|2|
+Edible Bullfrog|Pyxicephalus edulis|3|
+`,
+fis:`
+Tigerfish|Hydrocynus vittatus|2|
+Sharptooth Catfish|Clarias gariepinus|1|
+Silver Catfish|Schilbe intermedius|1|
+Mozambique Tilapia|Oreochromis mossambicus|1|
+Redbreast Tilapia|Coptodon rendalli|1|
+Lowveld Largemouth|Serranochromis meridianus|4|
+Purple Labeo|Labeo congoro|2|
+Bulldog|Marcusenius pongolensis|2|
+African Mottled Eel|Anguilla bengalensis|3|
+Longfin Eel|Anguilla mossambica|3|
+`
+};
+</script>

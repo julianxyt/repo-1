@@ -1,0 +1,1479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171B15" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F6F7F3" media="(prefers-color-scheme: light)">
+<meta name="description" content="A field checklist of the animals of Kruger National Park. Tick off what you see, attach your own photos, watch the count climb.">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>html{color-scheme:light dark}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Kruger Life List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;900&family=Silkscreen:wght@400;700&display=swap">
+<style>
+/* ---- tokens: a handheld field index. Red shell, inset screen. ---- */
+:root{
+  --shell:#A82A21; --shell-hi:#C9463A; --shell-lo:#78140F; --shell-ink:#FFEDE9;
+  --screen:#E3E7D3; --screen-2:#D2D8BE; --screen-3:#C3CBAC; --screen-sunk:#B9C2A0;
+  --ink:#141B0E; --ink-2:#48513C; --ink-3:#78826A; --line:#AEB995;
+  --lamp:#4FA9E8; --lamp-hi:#C6E6FA;
+  --caught:#1C6E38; --caught-soft:#BFDCC7;
+  --gold:#8E6108; --gold-soft:#E6D6A6;
+  --vrare:#5B4189; --vrare-soft:#D8CFEA;
+  --r:4px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --shell:#7E1F18; --shell-hi:#A6362B; --shell-lo:#4A0F0B; --shell-ink:#F7DBD6;
+    --screen:#161D15; --screen-2:#1F281D; --screen-3:#2A3427; --screen-sunk:#0D120C;
+    --ink:#DEE8D3; --ink-2:#94A189; --ink-3:#6C7962; --line:#374231;
+    --lamp:#6FC0F5; --lamp-hi:#D2ECFC;
+    --caught:#4FCB78; --caught-soft:#12331E;
+    --gold:#D9A93F; --gold-soft:#332711;
+    --vrare:#A995E0; --vrare-soft:#241C38;
+  }
+}
+:root[data-theme="dark"]{
+  --shell:#7E1F18; --shell-hi:#A6362B; --shell-lo:#4A0F0B; --shell-ink:#F7DBD6;
+  --screen:#161D15; --screen-2:#1F281D; --screen-3:#2A3427; --screen-sunk:#0D120C;
+  --ink:#DEE8D3; --ink-2:#94A189; --ink-3:#6C7962; --line:#374231;
+  --lamp:#6FC0F5; --lamp-hi:#D2ECFC;
+  --caught:#4FCB78; --caught-soft:#12331E;
+  --gold:#D9A93F; --gold-soft:#332711;
+  --vrare:#A995E0; --vrare-soft:#241C38;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--shell);color:var(--ink);
+  font-family:Chivo,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.45;
+  -webkit-text-size-adjust:100%;overscroll-behavior-y:none;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
+.px{font-family:Silkscreen,ui-monospace,monospace;letter-spacing:.02em}
+
+.app{max-width:760px;margin:0 auto;padding-bottom:90px}
+
+/* ---- the device top ---- */
+.deck{
+  background:var(--shell);
+  border-bottom:3px solid var(--shell-lo);
+  padding:12px 14px 0;
+}
+.deck-top{display:flex;align-items:center;gap:12px}
+.lamp-big{
+  width:36px;height:36px;border-radius:50%;flex:0 0 auto;
+  background:radial-gradient(circle at 32% 28%, var(--lamp-hi) 0 18%, var(--lamp) 45%, #1C5B86 100%);
+  border:3px solid var(--shell-ink);box-shadow:0 0 0 2px var(--shell-lo), 0 0 12px rgba(79,169,232,.5);
+  animation:blink 3.4s ease-in-out infinite;
+}
+@keyframes blink{0%,92%,100%{opacity:1}96%{opacity:.55}}
+.lamps{display:flex;gap:5px;flex:0 0 auto}
+.lamps i{width:9px;height:9px;border-radius:50%;display:block;border:1px solid rgba(0,0,0,.35)}
+.lamps i:nth-child(1){background:#E8543F}
+.lamps i:nth-child(2){background:#E8C33A}
+.lamps i:nth-child(3){background:#57C46B}
+.title{flex:1;min-width:0}
+.title b{
+  display:block;font-weight:900;font-size:15px;letter-spacing:-.01em;color:var(--shell-ink);
+  text-transform:uppercase;line-height:1.1;
+}
+.title span{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,237,233,.62);margin-top:2px}
+.deck-tools{display:flex;gap:3px;flex:0 0 auto}
+.icon-btn{
+  background:rgba(0,0,0,.18);border:1px solid var(--shell-lo);color:var(--shell-ink);
+  width:31px;height:31px;border-radius:var(--r);cursor:pointer;display:grid;place-items:center;padding:0;
+}
+.icon-btn:hover{background:var(--shell-hi)}
+.icon-btn svg{width:16px;height:16px;display:block}
+
+/* the counter readout, inset into the shell like an LCD */
+.readout{
+  margin:11px 0 0;background:var(--screen-sunk);border:2px solid var(--shell-lo);
+  border-radius:var(--r) var(--r) 0 0;padding:9px 12px 10px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.readout .big{font-family:Silkscreen,monospace;font-weight:700;font-size:26px;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.readout .of{font-family:Silkscreen,monospace;font-size:14px;color:var(--ink-3);line-height:1}
+.readout .lbl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+.readout .pct{
+  margin-left:auto;font-family:Silkscreen,monospace;font-size:12px;color:var(--caught);
+  background:var(--caught-soft);border:1px solid var(--caught);padding:2px 7px;border-radius:2px;
+}
+.rail{
+  display:flex;gap:2px;background:var(--screen-sunk);padding:0 12px 9px;
+  border:2px solid var(--shell-lo);border-top:0;border-radius:0 0 var(--r) var(--r);
+  margin-bottom:11px;
+}
+.rail-seg{position:relative;background:var(--screen-3);border-radius:1px;overflow:hidden;min-width:3px;height:6px}
+.rail-fill{position:absolute;inset:0 auto 0 0;background:var(--caught);transition:width .35s ease}
+
+/* ---- device buttons as tabs ---- */
+.viewtabs{display:flex;gap:5px;background:var(--shell);padding:9px 14px 11px;position:sticky;top:0;z-index:29;border-bottom:3px solid var(--shell-lo)}
+.viewtab{
+  flex:1;background:var(--screen-2);border:2px solid var(--shell-lo);border-bottom-width:3px;
+  border-radius:var(--r);padding:8px 4px;cursor:pointer;color:var(--ink-2);
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
+}
+.viewtab[aria-selected="true"]{background:var(--screen);color:var(--ink);border-bottom-width:2px;margin-top:1px;box-shadow:inset 0 2px 0 rgba(0,0,0,.09)}
+
+/* ---- the screen: everything below the deck ---- */
+.screen{background:var(--screen);border-top:2px solid var(--shell-lo);min-height:60vh;padding-bottom:22px}
+.controls{padding:13px 14px 4px;display:flex;flex-direction:column;gap:8px}
+.search-wrap{position:relative;display:flex;align-items:center}
+.search-wrap > svg{position:absolute;left:9px;width:15px;height:15px;color:var(--ink-3);pointer-events:none}
+#search{width:100%;padding:10px 32px 10px 30px;border:2px solid var(--line);background:var(--screen-2);border-radius:var(--r);color:var(--ink)}
+#search::placeholder{color:var(--ink-3)}
+.clear-search{position:absolute;right:3px;background:none;border:0;color:var(--ink-3);cursor:pointer;padding:6px;line-height:0}
+.clear-search svg{width:14px;height:14px}
+.chiprow{display:flex;gap:5px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none}
+.chiprow::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;background:var(--screen-2);border:2px solid var(--line);color:var(--ink-2);
+  padding:5px 9px;border-radius:var(--r);cursor:pointer;white-space:nowrap;
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+  display:flex;align-items:center;gap:6px;
+}
+.chip b{font-family:Silkscreen,monospace;font-weight:400;font-size:9.5px;color:var(--ink-3)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--screen)}
+.chip[aria-pressed="true"] b{color:var(--screen);opacity:.7}
+.filterbar{display:flex;gap:7px;align-items:center;justify-content:space-between}
+.seg{display:flex;border:2px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--screen-2)}
+.seg button{background:none;border:0;padding:6px 10px;cursor:pointer;color:var(--ink-3);font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700}
+.seg button + button{border-left:2px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--screen)}
+#sort{border:2px solid var(--line);background:var(--screen-2);border-radius:var(--r);padding:6px 7px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-2)}
+.count-note{padding:9px 14px 0;font-family:Silkscreen,monospace;font-size:10px;color:var(--ink-3)}
+</style>
+<style>
+/* ---- dex grid: the photo is the point, so it gets the whole card width ---- */
+.grouphead{display:flex;align-items:center;gap:9px;padding:18px 14px 8px}
+.grouphead h2{margin:0;font-weight:900;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
+.grouphead .gcount{font-family:Silkscreen,monospace;font-size:10px;color:var(--ink-3)}
+.grouphead hr{flex:1;border:0;border-top:2px solid var(--line);margin:0}
+
+.dexgrid{list-style:none;margin:0;padding:0 14px;display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+@media (min-width:560px){.dexgrid{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:740px){.dexgrid{grid-template-columns:repeat(4,1fr)}}
+
+.dex{
+  width:100%;text-align:left;cursor:pointer;padding:0;overflow:hidden;
+  background:var(--screen-2);border:2px solid var(--line);border-bottom-width:3px;
+  border-radius:var(--r);display:flex;flex-direction:column;
+}
+.dex:hover{border-color:var(--ink-3)}
+.dex.is-seen{background:var(--screen);border-color:var(--caught)}
+
+.dex-top{display:flex;align-items:center;justify-content:space-between;padding:5px 7px 4px;gap:6px}
+.dex-no{font-family:Silkscreen,monospace;font-size:9.5px;color:var(--ink-3)}
+.dex.is-seen .dex-no{color:var(--caught)}
+.ball{width:13px;height:13px;border-radius:50%;border:2px solid var(--ink-3);flex:0 0 auto;position:relative;background:var(--screen-3)}
+.dex.is-seen .ball{border-color:var(--caught);background:var(--caught)}
+.dex.is-seen .ball::after{content:"";position:absolute;left:1px;right:1px;top:3.5px;height:2px;background:var(--screen)}
+
+/* the picture window — a screen inside the screen */
+.shotwin{
+  position:relative;aspect-ratio:1;background:var(--screen-sunk);
+  border-top:2px solid var(--line);border-bottom:2px solid var(--line);
+  display:grid;place-items:center;overflow:hidden;
+}
+.dex.is-seen .shotwin{border-color:var(--caught)}
+.shotwin img{width:100%;height:100%;object-fit:cover;display:block}
+.shotwin .glyph{font-family:Silkscreen,monospace;font-size:11px;color:var(--ink-3);opacity:.7}
+.shotwin .multi{
+  position:absolute;right:3px;bottom:3px;background:rgba(0,0,0,.7);color:#fff;
+  font-family:Silkscreen,monospace;font-size:8.5px;padding:1px 4px;border-radius:2px;
+}
+.shotwin .nophoto{
+  position:absolute;inset:auto 0 0 0;background:var(--caught);color:var(--screen);
+  font-family:Silkscreen,monospace;font-size:8px;text-align:center;padding:2px 0;letter-spacing:.06em;
+}
+
+.dex-body{padding:7px 8px 9px;display:flex;flex-direction:column;gap:4px;flex:1}
+.dex-name{font-weight:700;font-size:13px;line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
+.dex-sci{font-size:10px;font-style:italic;color:var(--ink-3);line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:auto;padding-top:4px}
+.tag{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:2px 5px;border-radius:2px;border:1.5px solid}
+.r1{color:var(--ink-3);border-color:var(--line);background:var(--screen-3)}
+.r2{color:var(--caught);border-color:var(--caught);background:var(--caught-soft)}
+.r3{color:var(--gold);border-color:var(--gold);background:var(--gold-soft)}
+.r4{color:var(--vrare);border-color:var(--vrare);background:var(--vrare-soft)}
+.coll{color:var(--ink-2);border-color:var(--line);background:var(--screen-3)}
+.empty{padding:44px 20px;text-align:center;color:var(--ink-3)}
+.empty strong{display:block;font-weight:900;font-size:14px;color:var(--ink-2);margin-bottom:5px}
+
+/* ---- entry screen ---- */
+.sheet{position:fixed;inset:0;z-index:60;background:var(--shell);overflow-y:auto;animation:rise .18s ease-out}
+@keyframes rise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.sheet-inner{max-width:760px;margin:0 auto;padding:0 0 110px}
+.sheet-bar{position:sticky;top:0;z-index:2;background:var(--shell);display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;border-bottom:3px solid var(--shell-lo)}
+.backbtn{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.18);border:1px solid var(--shell-lo);cursor:pointer;color:var(--shell-ink);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;padding:7px 10px;border-radius:var(--r)}
+.backbtn svg{width:13px;height:13px}
+.sheet-no{font-family:Silkscreen,monospace;font-size:13px;color:var(--shell-ink)}
+
+.entry{background:var(--screen);border-top:2px solid var(--shell-lo);padding:0 14px 20px}
+.bigshot{
+  position:relative;margin:14px 0 0;aspect-ratio:4/3;background:var(--screen-sunk);
+  border:3px solid var(--shell-lo);border-radius:var(--r);overflow:hidden;display:grid;place-items:center;
+}
+.bigshot img{width:100%;height:100%;object-fit:cover}
+.bigshot .glyph{font-family:Silkscreen,monospace;font-size:15px;color:var(--ink-3)}
+.entry h2{margin:14px 0 0;font-weight:900;font-size:25px;letter-spacing:-.02em;line-height:1.1;text-wrap:balance}
+.entry .sci{font-style:italic;font-size:14px;color:var(--ink-3);margin-top:2px}
+.entry .chips{margin-top:9px}
+.blurb{border-left:3px solid var(--caught);padding:3px 0 3px 11px;margin:15px 0 0;color:var(--ink-2);font-size:13.5px;line-height:1.55;max-width:62ch}
+
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin:15px 0 0}
+.shot{position:relative;aspect-ratio:1;background:var(--screen-sunk);border:2px solid var(--line);border-radius:2px;overflow:hidden}
+.shot img{width:100%;height:100%;object-fit:cover;display:block}
+.shot .del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.72);border:0;color:#fff;width:22px;height:22px;border-radius:2px;cursor:pointer;display:grid;place-items:center;padding:0}
+.shot .del svg{width:11px;height:11px}
+.dropzone{aspect-ratio:1;border:2px dashed var(--line);border-radius:2px;display:grid;place-items:center;color:var(--ink-3);text-align:center;font-family:Silkscreen,monospace;font-size:8.5px;padding:6px}
+
+.btnrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;
+  border:2px solid var(--line);border-bottom-width:3px;background:var(--screen-2);color:var(--ink);
+  padding:10px 12px;border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;flex:1 1 auto;
+}
+.btn svg{width:15px;height:15px;flex:0 0 auto}
+.btn:hover{background:var(--screen-3)}
+.btn.primary{background:var(--caught);border-color:var(--caught);color:var(--screen)}
+.btn.ghost{flex:0 0 auto;color:var(--ink-3)}
+
+.fields{display:flex;flex-direction:column;gap:11px;margin-top:15px}
+.field label{display:block;font-family:Silkscreen,monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+.field input,.field textarea{width:100%;padding:9px 10px;border:2px solid var(--line);background:var(--screen-2);border-radius:var(--r);color:var(--ink)}
+.field textarea{min-height:78px;resize:vertical;line-height:1.5}
+
+/* ---- progress + collections ---- */
+.panel{padding:16px 14px}
+.bars{display:flex;flex-direction:column;gap:13px;margin-top:4px}
+.bar-row .bar-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px}
+.bar-name{font-weight:900;font-size:11px;letter-spacing:.13em;text-transform:uppercase}
+.bar-num{font-family:Silkscreen,monospace;font-size:10px;color:var(--ink-3)}
+.bar-num em{font-style:normal;color:var(--ink)}
+.bar-track{height:10px;background:var(--screen-sunk);border:2px solid var(--line);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:var(--caught);width:0;transition:width .4s ease}
+.bar-fill.gold{background:var(--gold)}
+.bar-fill.lilac{background:var(--vrare)}
+.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px}
+@media (min-width:620px){.statgrid{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--screen-2);border:2px solid var(--line);border-bottom-width:3px;border-radius:var(--r);padding:11px 11px 13px}
+.stat-k{font-family:Silkscreen,monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.stat-v{font-family:Silkscreen,monospace;font-weight:700;font-size:22px;line-height:1.2;margin-top:5px;color:var(--ink)}
+.stat-sub{font-size:10.5px;color:var(--ink-3);margin-top:2px}
+.section-title{font-weight:900;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;margin:26px 0 5px;display:flex;align-items:center;gap:9px}
+.section-title:first-child{margin-top:0}
+.section-title hr{flex:1;border:0;border-top:2px solid var(--line);margin:0}
+.section-note{color:var(--ink-3);font-size:12.5px;margin:0 0 12px;max-width:62ch}
+.collcard{border:2px solid var(--line);border-bottom-width:3px;border-radius:var(--r);background:var(--screen-2);padding:13px;margin-bottom:11px}
+.collcard header{display:flex;align-items:baseline;justify-content:space-between;gap:9px;margin-bottom:3px}
+.collcard h3{margin:0;font-weight:900;font-size:15px;letter-spacing:-.01em}
+.collcard .cdone{font-family:Silkscreen,monospace;font-size:11px;color:var(--ink-3)}
+.collcard .cdone.full{color:var(--caught)}
+.collcard p{margin:0 0 10px;font-size:12.5px;color:var(--ink-3);max-width:60ch}
+.colllist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.colllist button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;cursor:pointer;background:var(--screen-3);border:2px solid transparent;border-radius:2px;padding:6px 8px}
+.colllist button.done{border-color:var(--caught);background:var(--caught-soft)}
+.cn{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---- menu ---- */
+.menu{position:fixed;inset:auto 0 0 0;z-index:70;background:var(--screen);border-top:3px solid var(--shell-lo);padding:14px 14px calc(18px + env(safe-area-inset-bottom));animation:rise .18s ease-out}
+.menu-inner{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:7px}
+.menu h3{margin:0 0 2px;font-weight:900;font-size:11.5px;letter-spacing:.15em;text-transform:uppercase}
+.menu p{margin:0 0 5px;font-size:12.5px;color:var(--ink-3);max-width:60ch}
+.storageline{border-left:3px solid var(--line);padding-left:10px}
+.storageline.ok{border-left-color:var(--caught);color:var(--ink-2)}
+.storageline.warn{border-left-color:var(--gold);color:var(--ink-2)}
+.scrim{position:fixed;inset:0;z-index:69;background:rgba(10,6,5,.6)}
+.toast{
+  position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  z-index:90;background:var(--ink);color:var(--screen);padding:9px 14px;border-radius:var(--r);
+  font-size:12.5px;font-weight:600;max-width:88vw;text-align:center;border:2px solid var(--shell-lo);
+}
+.footnote{padding:24px 14px 0;color:var(--ink-3);font-size:11.5px;line-height:1.6;max-width:64ch}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3.2L13 4.6" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 16 16"><path d="M9.5 3L5 8l4.5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 16 16"><path d="M1.6 5.2h2.6l1.1-1.6h5.4l1.1 1.6h2.6v7.6H1.6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="8" cy="9" r="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+    <symbol id="i-img" viewBox="0 0 16 16"><rect x="1.6" y="3" width="12.8" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M1.8 10.6l3.4-3 2.6 2.3 2.6-2.6 3.6 3.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 16 16"><path d="M2 4.5h12M2 8h12M2 11.5h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 .9v2M8 13.1v2M.9 8h2M13.1 8h2M3 3l1.4 1.4M11.6 11.6L13 13M13 3l-1.4 1.4M4.4 11.6L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="deck">
+    <div class="deck-top">
+      <div class="lamp-big" aria-hidden="true"></div>
+      <div class="lamps" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="title">
+        <b>Kruger Life List</b>
+        <span>Southern section field index</span>
+      </div>
+      <div class="deck-tools">
+        <button class="icon-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme"><svg><use href="#i-sun"/></svg></button>
+        <button class="icon-btn" id="menuBtn" title="Backup and settings" aria-label="Backup and settings"><svg><use href="#i-menu"/></svg></button>
+      </div>
+    </div>
+    <div class="readout">
+      <span class="big" id="tallySeen">0</span>
+      <span class="of">/</span><span class="of" id="tallyTot">0</span>
+      <span class="lbl">recorded</span>
+      <span class="pct" id="tallyPct">0%</span>
+    </div>
+    <div class="rail" id="rail" aria-hidden="true"></div>
+  </header>
+
+<nav class="viewtabs" role="tablist" aria-label="Views">
+    <button class="viewtab" role="tab" id="tab-list" aria-selected="true" data-view="list">Dex</button>
+    <button class="viewtab" role="tab" id="tab-coll" aria-selected="false" data-view="coll">Collections</button>
+    <button class="viewtab" role="tab" id="tab-prog" aria-selected="false" data-view="prog">Progress</button>
+  </nav>
+
+  <section id="view-list" class="screen" role="tabpanel" aria-labelledby="tab-list">
+    <div class="controls">
+      <div class="search-wrap">
+        <svg><use href="#i-search"/></svg>
+        <input id="search" type="search" placeholder="Search name, binomial or group" autocomplete="off" spellcheck="false" aria-label="Search species">
+        <button class="clear-search" id="clearSearch" hidden aria-label="Clear search"><svg><use href="#i-x"/></svg></button>
+      </div>
+      <div class="chiprow" id="groupChips" role="group" aria-label="Filter by group"></div>
+      <div class="filterbar">
+        <div class="seg" role="group" aria-label="Filter by status">
+          <button data-status="all" aria-pressed="true">All</button>
+          <button data-status="seen" aria-pressed="false">Logged</button>
+          <button data-status="todo" aria-pressed="false">To find</button>
+        </div>
+        <select id="sort" aria-label="Sort order">
+          <option value="taxo">Taxonomic</option>
+          <option value="az">A–Z</option>
+          <option value="rarity">Hardest first</option>
+          <option value="recent">Recently logged</option>
+        </select>
+      </div>
+    </div>
+    <p class="count-note" id="countNote"></p>
+    <div id="listBody"></div>
+    <p class="footnote">Scoped to southern Kruger — Malelane, Berg-en-Dal, Pretoriuskop, Skukuza, Lower Sabie, Crocodile Bridge — and to what you can pick out from a vehicle. Rarity is rated for this section of the park specifically, so a species that is common up north may read as rare here.</p>
+  </section>
+
+  <section id="view-coll" class="screen" role="tabpanel" aria-labelledby="tab-coll" hidden>
+    <div class="panel">
+      <h2 class="section-title">Named sets<hr></h2>
+      <p class="section-note">The lists Kruger regulars actually keep. The Secret Seven is where a trip gets interesting — none of those seven are hard to find because they are rare, only because nobody is looking. All seven are in the south.</p>
+      <div id="collBody"></div>
+    </div>
+  </section>
+
+  <section id="view-prog" class="screen" role="tabpanel" aria-labelledby="tab-prog" hidden>
+    <div class="panel">
+      <div class="statgrid" id="statGrid"></div>
+      <h2 class="section-title">By group<hr></h2>
+      <div class="bars" id="groupBars"></div>
+      <h2 class="section-title">By difficulty<hr></h2>
+      <p class="section-note">Everyone finishes the common column. The last three are the ones that take years.</p>
+      <div class="bars" id="rarityBars"></div>
+      <p class="footnote">Everything is stored on this device only — no account, no upload, nothing leaves your phone. That also means clearing your browser data wipes it, so export a backup after a good trip.</p>
+    </div>
+  </section>
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetName"></div>
+<input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="filePick" accept="image/*" multiple hidden>
+<input type="file" id="fileRestore" accept="application/json,.json" hidden>
+<script>
+/* ------------------------------------------------------------------
+   The checklist. One line per species:
+     Common name | Scientific name | rarity 1-4 | collection keys
+   Rarity: 1 common · 2 uncommon · 3 rare · 4 very rare (daytime odds)
+------------------------------------------------------------------ */
+const GROUPS = [
+  {key:'mam', name:'Mammals',    glyph:'MAM'},
+  {key:'bir', name:'Birds',      glyph:'AVE'},
+  {key:'rep', name:'Reptiles',   glyph:'REP'},
+  {key:'amp', name:'Amphibians', glyph:'AMP'},
+  {key:'fis', name:'Fish',       glyph:'PIS'}
+];
+
+const COLLECTIONS = [
+  {key:'b5', name:'The Big Five',      note:'The colonial hunting list that became the safari benchmark — named for danger on foot, not for size. Both rhinos are listed separately, so this one runs to six.'},
+  {key:'s7', name:'The Secret Seven',  note:"Kruger's own list of the shy and the nocturnal. Most people leave the park having seen none of them."},
+  {key:'u5', name:'The Ugly Five',     note:'Unfairly named. Between them they do most of the park’s actual work.'},
+  {key:'b6', name:'The Birding Big Six', note:'Six large, scarce birds that Kruger birders measure a trip by. Pel’s Fishing Owl breaks most attempts.'}
+];
+
+const RARITY = ['','Common','Uncommon','Rare','Very rare'];
+
+const RAW = {
+mam:`
+African Bush Elephant|Loxodonta africana|1|b5
+Lion|Panthera leo|1|b5
+Leopard|Panthera pardus|2|b5
+Cape Buffalo|Syncerus caffer|1|b5
+White Rhinoceros|Ceratotherium simum|3|b5
+Black Rhinoceros|Diceros bicornis|4|b5
+Hippopotamus|Hippopotamus amphibius|1|
+Giraffe|Giraffa camelopardalis|1|
+Plains Zebra|Equus quagga burchellii|1|
+Common Warthog|Phacochoerus africanus|1|u5
+Bushpig|Potamochoerus larvatus|3|
+Cheetah|Acinonyx jubatus|3|
+Spotted Hyena|Crocuta crocuta|1|u5
+African Wild Dog|Lycaon pictus|3|
+Black-backed Jackal|Lupulella mesomelas|1|
+Side-striped Jackal|Lupulella adusta|4|
+Caracal|Caracal caracal|3|
+Serval|Leptailurus serval|3|s7
+African Wildcat|Felis lybica|2|s7
+Aardvark|Orycteropus afer|4|s7
+Aardwolf|Proteles cristatus|4|
+Ground Pangolin|Smutsia temminckii|4|s7
+Honey Badger|Mellivora capensis|3|
+African Civet|Civettictis civetta|2|s7
+Large-spotted Genet|Genetta maculata|1|s7
+Small-spotted Genet|Genetta genetta|2|
+Cape Porcupine|Hystrix africaeaustralis|2|s7
+Cape Clawless Otter|Aonyx capensis|3|
+Striped Polecat|Ictonyx striatus|3|
+African Striped Weasel|Poecilogale albinucha|4|
+Banded Mongoose|Mungos mungo|1|
+Dwarf Mongoose|Helogale parvula|1|
+Slender Mongoose|Herpestes sanguineus|1|
+White-tailed Mongoose|Ichneumia albicauda|2|
+Marsh Mongoose|Atilax paludinosus|3|
+Large Grey Mongoose|Herpestes ichneumon|3|
+Impala|Aepyceros melampus|1|
+Greater Kudu|Tragelaphus strepsiceros|1|
+Blue Wildebeest|Connochaetes taurinus|1|u5
+Waterbuck|Kobus ellipsiprymnus|1|
+Nyala|Tragelaphus angasii|1|
+Bushbuck|Tragelaphus sylvaticus|1|
+Common Duiker|Sylvicapra grimmia|1|
+Red Duiker|Cephalophus natalensis|4|
+Steenbok|Raphicerus campestris|1|
+Sharpe's Grysbok|Raphicerus sharpei|4|
+Klipspringer|Oreotragus oreotragus|2|
+Oribi|Ourebia ourebi|3|
+Sable Antelope|Hippotragus niger|3|
+Common Eland|Taurotragus oryx|4|
+Southern Reedbuck|Redunca arundinum|3|
+Mountain Reedbuck|Redunca fulvorufula|4|
+Chacma Baboon|Papio ursinus|1|
+Vervet Monkey|Chlorocebus pygerythrus|1|
+Thick-tailed Bushbaby|Otolemur crassicaudatus|2|
+Springhare|Pedetes capensis|2|
+Scrub Hare|Lepus saxatilis|1|
+Smith's Red Rock Rabbit|Pronolagus rupestris|3|
+Greater Cane Rat|Thryonomys swinderianus|3|
+Rock Hyrax|Procavia capensis|2|
+Southern Giant Pouched Rat|Cricetomys ansorgei|3|
+`,
+rep:`
+Nile Crocodile|Crocodylus niloticus|1|
+Leopard Tortoise|Stigmochelys pardalis|1|
+Speke's Hinge-back Tortoise|Kinixys spekii|2|
+Serrated Hinged Terrapin|Pelusios sinuatus|1|
+Marsh Terrapin|Pelomedusa galeata|2|
+Water Monitor|Varanus niloticus|1|
+Rock Monitor|Varanus albigularis|2|
+Giant Plated Lizard|Matobosaurus validus|2|
+African Rock Python|Python natalensis|2|
+Black Mamba|Dendroaspis polylepis|2|
+Mozambique Spitting Cobra|Naja mossambica|2|
+Snouted Cobra|Naja annulifera|2|
+Boomslang|Dispholidus typus|2|
+Puff Adder|Bitis arietans|2|
+Olive Grass Snake|Psammophis mossambicus|1|
+Mole Snake|Pseudaspis cana|3|
+`,
+amp:`
+African Bullfrog|Pyxicephalus adspersus|2|
+Edible Bullfrog|Pyxicephalus edulis|3|
+`,
+fis:`
+Tigerfish|Hydrocynus vittatus|2|
+Sharptooth Catfish|Clarias gariepinus|1|
+Silver Catfish|Schilbe intermedius|1|
+Mozambique Tilapia|Oreochromis mossambicus|1|
+Redbreast Tilapia|Coptodon rendalli|1|
+Lowveld Largemouth|Serranochromis meridianus|4|
+Purple Labeo|Labeo congoro|2|
+Bulldog|Marcusenius pongolensis|2|
+African Mottled Eel|Anguilla bengalensis|3|
+Longfin Eel|Anguilla mossambica|3|
+`
+};
+</script>
+<script>
+RAW.bir = `
+Common Ostrich|Struthio camelus|2|
+Secretarybird|Sagittarius serpentarius|2|
+Kori Bustard|Ardeotis kori|3|b6
+Red-crested Korhaan|Lophotis ruficrista|1|
+Black-bellied Bustard|Lissotis melanogaster|2|
+Southern Ground Hornbill|Bucorvus leadbeateri|2|b6
+Helmeted Guineafowl|Numida meleagris|1|
+Crested Guineafowl|Guttera edouardi|2|
+Natal Spurfowl|Pternistis natalensis|1|
+Swainson's Spurfowl|Pternistis swainsonii|1|
+Crested Francolin|Ortygornis sephaena|1|
+African Fish Eagle|Icthyophaga vocifer|1|
+Martial Eagle|Polemaetus bellicosus|3|b6
+Bateleur|Terathopius ecaudatus|1|
+Tawny Eagle|Aquila rapax|2|
+Wahlberg's Eagle|Hieraaetus wahlbergi|1|
+African Hawk-Eagle|Aquila spilogaster|2|
+Verreaux's Eagle|Aquila verreauxii|3|
+Brown Snake Eagle|Circaetus cinereus|2|
+Black-chested Snake Eagle|Circaetus pectoralis|2|
+African Harrier-Hawk|Polyboroides typus|2|
+Lappet-faced Vulture|Torgos tracheliotos|3|b6
+White-backed Vulture|Gyps africanus|1|u5
+White-headed Vulture|Trigonoceps occipitalis|4|
+Hooded Vulture|Necrosyrtes monachus|2|
+Dark Chanting Goshawk|Melierax metabates|1|
+Gabar Goshawk|Micronisus gabar|2|
+Shikra|Accipiter badius|1|
+Lizard Buzzard|Kaupifalco monogrammicus|2|
+Yellow-billed Kite|Milvus aegyptius|1|
+Lanner Falcon|Falco biarmicus|2|
+Verreaux's Eagle-Owl|Bubo lacteus|2|
+Spotted Eagle-Owl|Bubo africanus|1|
+Pearl-spotted Owlet|Glaucidium perlatum|1|
+African Scops Owl|Otus senegalensis|1|
+Southern White-faced Owl|Ptilopsis granti|2|
+Pel's Fishing Owl|Scotopelia peli|4|b6
+Fiery-necked Nightjar|Caprimulgus pectoralis|1|
+Saddle-billed Stork|Ephippiorhynchus senegalensis|2|b6
+Marabou Stork|Leptoptilos crumenifer|1|u5
+Yellow-billed Stork|Mycteria ibis|1|
+African Openbill|Anastomus lamelligerus|1|
+Woolly-necked Stork|Ciconia episcopus|2|
+Goliath Heron|Ardea goliath|2|
+Grey Heron|Ardea cinerea|1|
+Black-headed Heron|Ardea melanocephala|1|
+Great Egret|Ardea alba|1|
+Little Egret|Egretta garzetta|1|
+Western Cattle Egret|Bubulcus ibis|1|
+Green-backed Heron|Butorides striata|1|
+Hamerkop|Scopus umbretta|1|
+African Spoonbill|Platalea alba|2|
+African Sacred Ibis|Threskiornis aethiopicus|1|
+Hadada Ibis|Bostrychia hagedash|1|
+Reed Cormorant|Microcarbo africanus|1|
+White-breasted Cormorant|Phalacrocorax lucidus|1|
+African Darter|Anhinga rufa|1|
+African Jacana|Actophilornis africanus|1|
+African Finfoot|Podica senegalensis|4|
+Water Thick-knee|Burhinus vermiculatus|1|
+Spotted Thick-knee|Burhinus capensis|1|
+Blacksmith Lapwing|Vanellus armatus|1|
+Crowned Lapwing|Vanellus coronatus|1|
+White-crowned Lapwing|Vanellus albiceps|2|
+African Wattled Lapwing|Vanellus senegallus|2|
+Three-banded Plover|Charadrius tricollaris|1|
+Egyptian Goose|Alopochen aegyptiaca|1|
+Spur-winged Goose|Plectropterus gambensis|1|
+Knob-billed Duck|Sarkidiornis melanotos|2|
+African Pygmy Goose|Nettapus auritus|4|
+White-faced Whistling Duck|Dendrocygna viduata|1|
+Black Crake|Zapornia flavirostra|1|
+Malachite Kingfisher|Corythornis cristatus|1|
+African Pygmy Kingfisher|Ispidina picta|2|
+Giant Kingfisher|Megaceryle maxima|2|
+Pied Kingfisher|Ceryle rudis|1|
+Woodland Kingfisher|Halcyon senegalensis|1|
+Brown-hooded Kingfisher|Halcyon albiventris|1|
+Striped Kingfisher|Halcyon chelicuti|2|
+Lilac-breasted Roller|Coracias caudatus|1|
+European Roller|Coracias garrulus|2|
+Purple Roller|Coracias naevius|2|
+White-fronted Bee-eater|Merops bullockoides|1|
+Little Bee-eater|Merops pusillus|1|
+European Bee-eater|Merops apiaster|1|
+Southern Carmine Bee-eater|Merops nubicoides|3|
+African Hoopoe|Upupa africana|1|
+Green Wood Hoopoe|Phoeniculus purpureus|1|
+Narina Trogon|Apaloderma narina|4|
+Southern Yellow-billed Hornbill|Tockus leucomelas|1|
+Southern Red-billed Hornbill|Tockus rufirostris|1|
+African Grey Hornbill|Lophoceros nasutus|1|
+Trumpeter Hornbill|Bycanistes bucinator|2|
+Black-collared Barbet|Lybius torquatus|1|
+Crested Barbet|Trachyphonus vaillantii|1|
+Greater Honeyguide|Indicator indicator|2|
+Bearded Woodpecker|Chloropicus namaquus|2|
+Golden-tailed Woodpecker|Campethera abingoni|1|
+Grey Go-away-bird|Corythaixoides concolor|1|
+Purple-crested Turaco|Gallirex porphyreolophus|2|
+Red-chested Cuckoo|Cuculus solitarius|1|
+Diederik Cuckoo|Chrysococcyx caprius|1|
+Burchell's Coucal|Centropus burchellii|1|
+Emerald-spotted Wood Dove|Turtur chalcospilos|1|
+Laughing Dove|Spilopelia senegalensis|1|
+Ring-necked Dove|Streptopelia capicola|1|
+Red-eyed Dove|Streptopelia semitorquata|1|
+African Green Pigeon|Treron calvus|1|
+Brown-headed Parrot|Poicephalus cryptoxanthus|2|
+Red-faced Mousebird|Urocolius indicus|1|
+African Palm Swift|Cypsiurus parvus|1|
+Little Swift|Apus affinis|1|
+Barn Swallow|Hirundo rustica|1|
+Wire-tailed Swallow|Hirundo smithii|1|
+Lesser Striped Swallow|Cecropis abyssinica|1|
+Fork-tailed Drongo|Dicrurus adsimilis|1|
+Pied Crow|Corvus albus|1|
+Magpie Shrike|Urolestes melanoleucus|1|
+Southern White-crowned Shrike|Eurocephalus anguitimens|2|
+Red-backed Shrike|Lanius collurio|1|
+Southern Boubou|Laniarius ferrugineus|1|
+Black-backed Puffback|Dryoscopus cubla|1|
+Brubru|Nilaus afer|1|
+Black-crowned Tchagra|Tchagra senegalus|1|
+Orange-breasted Bushshrike|Chlorophoneus sulfureopectus|1|
+Grey-headed Bushshrike|Malaconotus blanchoti|2|
+Gorgeous Bushshrike|Telophorus viridis|3|
+White-crested Helmetshrike|Prionops plumatus|1|
+Retz's Helmetshrike|Prionops retzii|2|
+Chinspot Batis|Batis molitor|1|
+African Paradise Flycatcher|Terpsiphone viridis|1|
+Arrow-marked Babbler|Turdoides jardineii|1|
+Dark-capped Bulbul|Pycnonotus tricolor|1|
+Kurrichane Thrush|Turdus libonyana|1|
+Groundscraper Thrush|Turdus litsitsirupa|1|
+White-browed Robin-Chat|Cossypha heuglini|1|
+White-throated Robin-Chat|Cossypha humeralis|2|
+White-browed Scrub Robin|Cercotrichas leucophrys|1|
+Mocking Cliff Chat|Thamnolaea cinnamomeiventris|2|
+Cape Glossy Starling|Lamprotornis nitens|1|
+Greater Blue-eared Starling|Lamprotornis chalybaeus|1|
+Burchell's Starling|Lamprotornis australis|1|
+Violet-backed Starling|Cinnyricinclus leucogaster|1|
+Red-winged Starling|Onychognathus morio|1|
+Red-billed Oxpecker|Buphagus erythrorynchus|1|
+Scarlet-chested Sunbird|Chalcomitra senegalensis|1|
+White-bellied Sunbird|Cinnyris talatala|1|
+Marico Sunbird|Cinnyris mariquensis|1|
+Collared Sunbird|Hedydipna collaris|2|
+Red-billed Buffalo Weaver|Bubalornis niger|1|l5
+White-browed Sparrow-Weaver|Plocepasser mahali|1|
+Village Weaver|Ploceus cucullatus|1|
+Southern Masked Weaver|Ploceus velatus|1|
+Lesser Masked Weaver|Ploceus intermedius|1|
+Southern Red Bishop|Euplectes orix|1|
+Blue Waxbill|Uraeginthus angolensis|1|
+Green-winged Pytilia|Pytilia melba|1|
+Red-billed Firefinch|Lagonosticta senegala|1|
+Pin-tailed Whydah|Vidua macroura|1|
+Long-tailed Paradise Whydah|Vidua paradisaea|2|
+Golden-breasted Bunting|Emberiza flaviventris|1|
+African Pied Wagtail|Motacilla aguimp|1|
+`;
+</script>
+<script>
+(function(){
+"use strict";
+
+/* ---------------- parse the checklist ---------------- */
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const SPECIES = [];
+GROUPS.forEach((g, gi) => {
+  (RAW[g.key]||'').trim().split('\n').forEach((line, i) => {
+    if(!line.trim()) return;
+    const [name, sci, rar, colls] = line.split('|');
+    SPECIES.push({
+      id: g.key + '-' + slug(name),
+      group: g.key, gi, ord: i,
+      name: name.trim(), sci: (sci||'').trim(),
+      rarity: parseInt(rar,10) || 1,
+      colls: (colls||'').split(',').map(s=>s.trim()).filter(Boolean),
+      hay: (name + ' ' + sci + ' ' + g.name).toLowerCase()
+    });
+  });
+});
+SPECIES.forEach((sp, i) => { sp.no = String(i + 1).padStart(3, '0'); });
+const BY_ID = new Map(SPECIES.map(s => [s.id, s]));
+const TOTAL = SPECIES.length;
+const GROUP_OF = Object.fromEntries(GROUPS.map(g => [g.key, g]));
+
+const RARITY_NOTE = {
+  1:'Common. If you spend a few days in the park with your eyes open, this one finds you.',
+  2:'Uncommon. Present throughout, but it takes a deliberate look — or the right time of day.',
+  3:'Rare. Expect to earn this one. Right habitat, right hour, and a good measure of luck.',
+  4:'Very rare. A genuine trophy sighting. Plenty of Kruger regulars go a decade without one.'
+};
+
+/* ---------------- storage: IndexedDB, entirely on-device ---------------- */
+const DB_NAME = 'kruger-life-list', DB_VER = 1;
+let idb = null;
+
+function openDB(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('log')) db.createObjectStore('log', {keyPath:'id'});
+      if(!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', {keyPath:'pid'});
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+/* Private browsing can refuse IndexedDB outright. Rather than break, fall back to
+   memory for the session and say so once — a lost tick beats a dead app. */
+const MEM = {log:new Map(), photos:new Map()};
+let useMem = false;
+function tx(store){
+  if(useMem){
+    const m = MEM[store];
+    return {
+      get:    k => ({_v: m.get(k)}),
+      getAll: () => ({_v: [...m.values()]}),
+      put:    v => { m.set(v.id !== undefined ? v.id : v.pid, v); return {_v: undefined}; },
+      delete: k => { m.delete(k); return {_v: undefined}; }
+    };
+  }
+  return idb.transaction(store, arguments[1]).objectStore(store);
+}
+function pReq(r){
+  if(r && Object.prototype.hasOwnProperty.call(r, '_v')) return Promise.resolve(r._v);
+  return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+}
+
+const LOG = new Map();        // id -> {id, seen, ts, date, place, notes, photos:[pid]}
+const PHOTO_URLS = new Map(); // pid -> {full, thumb}
+
+async function loadAll(){
+  const rows = await pReq(tx('log','readonly').getAll());
+  rows.forEach(r => LOG.set(r.id, r));
+}
+function entry(id){
+  let e = LOG.get(id);
+  if(!e){ e = {id, seen:false, ts:0, date:'', place:'', notes:'', photos:[]}; LOG.set(id, e); }
+  return e;
+}
+const hasContent = e => !!(e.seen || e.photos.length || e.notes || e.place || e.date);
+async function saveEntry(e){
+  if(!hasContent(e)){
+    LOG.delete(e.id);
+    await pReq(tx('log','readwrite').delete(e.id));
+  } else {
+    await pReq(tx('log','readwrite').put(JSON.parse(JSON.stringify(e))));
+  }
+}
+async function getPhoto(pid){ return pReq(tx('photos','readonly').get(pid)); }
+
+async function urlsFor(pid){
+  if(PHOTO_URLS.has(pid)) return PHOTO_URLS.get(pid);
+  const rec = await getPhoto(pid);
+  if(!rec) return null;
+  const u = {full: URL.createObjectURL(rec.full), thumb: URL.createObjectURL(rec.thumb)};
+  PHOTO_URLS.set(pid, u);
+  return u;
+}
+async function dropPhoto(pid){
+  const u = PHOTO_URLS.get(pid);
+  if(u){ URL.revokeObjectURL(u.full); URL.revokeObjectURL(u.thumb); PHOTO_URLS.delete(pid); }
+  await pReq(tx('photos','readwrite').delete(pid));
+}
+
+/* Resize on the way in: a phone photo is ~5 MB, and a life list is hundreds of them. */
+function shrink(file, max, quality){
+  return new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale);
+      c.height = Math.round(img.height * scale);
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('encode failed')), 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('That file could not be read as an image.')); };
+    img.src = url;
+  });
+}
+async function addPhotos(id, files){
+  const e = entry(id);
+  for(const f of files){
+    if(!f.type.startsWith('image/')) continue;
+    const pid = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+    const [full, thumb] = await Promise.all([shrink(f, 1600, 0.82), shrink(f, 200, 0.7)]);
+    await pReq(tx('photos','readwrite').put({pid, full, thumb}));
+    e.photos.push(pid);
+  }
+  if(e.photos.length && !e.seen){ e.seen = true; e.ts = Date.now(); if(!e.date) e.date = todayStr(); }
+  await saveEntry(e);
+}
+const todayStr = () => new Date().toISOString().slice(0,10);
+
+/* ---------------- view state ---------------- */
+const S = {view:'list', group:'all', status:'all', sort:'taxo', q:'', open:null};
+const $ = s => document.querySelector(s);
+const el = (t, cls, txt) => { const n = document.createElement(t); if(cls) n.className = cls; if(txt != null) n.textContent = txt; return n; };
+const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
+const isSeen = id => !!(LOG.get(id) && LOG.get(id).seen);
+
+function seenCount(list){ return list.reduce((n, s) => n + (isSeen(s.id) ? 1 : 0), 0); }
+
+/* ---------------- masthead ---------------- */
+function renderTally(){
+  const done = seenCount(SPECIES);
+  $('#tallySeen').textContent = done;
+  $('#tallyTot').textContent = TOTAL;
+  $('#tallyPct').textContent = (TOTAL ? Math.round(done / TOTAL * 100) : 0) + '%';
+  const rail = $('#rail');
+  if(!rail.children.length){
+    GROUPS.forEach(g => {
+      const n = SPECIES.filter(s => s.group === g.key).length;
+      const seg = el('div','rail-seg');
+      seg.style.flex = n + ' 1 0';
+      seg.title = g.name;
+      seg.appendChild(el('div','rail-fill'));
+      seg.dataset.g = g.key;
+      rail.appendChild(seg);
+    });
+  }
+  GROUPS.forEach(g => {
+    const list = SPECIES.filter(s => s.group === g.key);
+    const pct = list.length ? seenCount(list) / list.length * 100 : 0;
+    rail.querySelector(`[data-g="${g.key}"] .rail-fill`).style.width = pct + '%';
+  });
+}
+
+/* ---------------- checklist ---------------- */
+function renderChips(){
+  const box = $('#groupChips');
+  if(box.children.length) { updateChipCounts(); return; }
+  const mk = (key, label, n) => {
+    const b = el('button','chip');
+    b.type = 'button'; b.dataset.g = key;
+    b.setAttribute('aria-pressed', String(S.group === key));
+    b.innerHTML = `${label} <b data-c="${key}"></b>`;
+    b.addEventListener('click', () => {
+      S.group = key;
+      box.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.g === key)));
+      renderList();
+    });
+    return b;
+  };
+  box.appendChild(mk('all','All'));
+  GROUPS.forEach(g => box.appendChild(mk(g.key, g.name)));
+  updateChipCounts();
+}
+function updateChipCounts(){
+  $('#groupChips').querySelector('[data-c="all"]').textContent = seenCount(SPECIES) + '/' + TOTAL;
+  GROUPS.forEach(g => {
+    const list = SPECIES.filter(s => s.group === g.key);
+    const n = $('#groupChips').querySelector(`[data-c="${g.key}"]`);
+    if(n) n.textContent = seenCount(list) + '/' + list.length;
+  });
+}
+
+function filtered(){
+  let out = SPECIES;
+  if(S.group !== 'all') out = out.filter(s => s.group === S.group);
+  if(S.status === 'seen') out = out.filter(s => isSeen(s.id));
+  if(S.status === 'todo') out = out.filter(s => !isSeen(s.id));
+  if(S.q){
+    const q = S.q.toLowerCase();
+    out = out.filter(s => s.hay.includes(q));
+  }
+  out = out.slice();
+  if(S.sort === 'az') out.sort((a,b) => a.name.localeCompare(b.name));
+  else if(S.sort === 'rarity') out.sort((a,b) => b.rarity - a.rarity || a.gi - b.gi || a.ord - b.ord);
+  else if(S.sort === 'recent') out.sort((a,b) => ((LOG.get(b.id)||{}).ts||0) - ((LOG.get(a.id)||{}).ts||0) || a.name.localeCompare(b.name));
+  else out.sort((a,b) => a.gi - b.gi || a.ord - b.ord);
+  return out;
+}
+
+function rowFor(sp){
+  const e = LOG.get(sp.id);
+  const seen = !!(e && e.seen);
+  const li = el('li');
+  const card = el('button', 'dex' + (seen ? ' is-seen' : ''));
+  card.type = 'button';
+  card.setAttribute('aria-label', sp.name + (seen ? ', recorded' : ', not yet recorded'));
+
+  const top = el('div','dex-top');
+  top.innerHTML = `<span class="dex-no">No.${sp.no}</span><span class="ball"></span>`;
+  card.appendChild(top);
+
+  const win = el('div','shotwin');
+  win.innerHTML = `<span class="glyph">${GROUP_OF[sp.group].glyph}</span>`;
+  if(e && e.photos.length){
+    urlsFor(e.photos[0]).then(u => {
+      if(!u) return;
+      win.innerHTML = `<img alt="" src="${u.thumb}">`;
+      if(e.photos.length > 1) win.insertAdjacentHTML('beforeend', `<span class="multi">${e.photos.length}</span>`);
+    });
+  } else if(seen){
+    win.insertAdjacentHTML('beforeend', '<span class="nophoto">SEEN · NO PHOTO</span>');
+  }
+  card.appendChild(win);
+
+  const body = el('div','dex-body');
+  body.appendChild(el('div','dex-name', sp.name));
+  body.appendChild(el('div','dex-sci', sp.sci));
+  const chips = el('div','chips');
+  chips.appendChild(el('span','tag r' + sp.rarity, RARITY[sp.rarity]));
+  sp.colls.forEach(c => {
+    const col = COLLECTIONS.find(x => x.key === c);
+    if(col) chips.appendChild(el('span','tag coll', col.name.replace(/^The /,'')));
+  });
+  body.appendChild(chips);
+  card.appendChild(body);
+
+  card.addEventListener('click', () => openSheet(sp.id));
+  li.appendChild(card);
+  return li;
+}
+
+function renderList(){
+  updateChipCounts();
+  const body = $('#listBody');
+  body.textContent = '';
+  const rows = filtered();
+  const done = seenCount(rows);
+  $('#countNote').textContent = rows.length
+    ? `${rows.length} species shown · ${done} logged · ${rows.length - done} to find`
+    : '';
+
+  if(!rows.length){
+    const e = el('div','empty');
+    e.innerHTML = '<strong>Nothing matches</strong>Try a different spelling, or clear the filters.';
+    body.appendChild(e);
+    return;
+  }
+
+  if(S.sort === 'taxo' && S.group === 'all'){
+    GROUPS.forEach(g => {
+      const chunk = rows.filter(s => s.group === g.key);
+      if(!chunk.length) return;
+      const h = el('div','grouphead');
+      h.innerHTML = `<h2>${g.name}</h2><span class="gcount">${seenCount(chunk)}/${chunk.length}</span><hr>`;
+      body.appendChild(h);
+      const ul = el('ul','dexgrid');
+      chunk.forEach(s => ul.appendChild(rowFor(s)));
+      body.appendChild(ul);
+    });
+  } else {
+    const ul = el('ul','dexgrid');
+    ul.style.marginTop = '12px';
+    rows.forEach(s => ul.appendChild(rowFor(s)));
+    body.appendChild(ul);
+  }
+}
+
+/* ---------------- collections ---------------- */
+function renderCollections(){
+  const box = $('#collBody');
+  box.textContent = '';
+  COLLECTIONS.forEach(col => {
+    const members = SPECIES.filter(s => s.colls.includes(col.key));
+    const done = seenCount(members);
+    const card = el('div','collcard');
+    const head = el('header');
+    head.innerHTML = `<h3>${col.name}</h3><span class="cdone${done === members.length ? ' full' : ''}">${done}/${members.length}</span>`;
+    card.appendChild(head);
+    card.appendChild(el('p', null, col.note));
+    const ul = el('ul','colllist');
+    members.forEach(sp => {
+      const li = el('li');
+      const b = el('button', isSeen(sp.id) ? 'done' : '');
+      b.type = 'button';
+      b.innerHTML = `<span class="cdot">${icon('check')}</span><span class="cn">${sp.name}</span>`;
+      b.addEventListener('click', () => openSheet(sp.id));
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    card.appendChild(ul);
+    box.appendChild(card);
+  });
+}
+
+/* ---------------- progress ---------------- */
+function bar(name, done, total, tone){
+  const row = el('div','bar-row');
+  const pct = total ? done / total * 100 : 0;
+  row.innerHTML =
+    `<div class="bar-top"><span class="bar-name">${name}</span>` +
+    `<span class="bar-num"><em>${done}</em> / ${total}&nbsp;&nbsp;${Math.round(pct)}%</span></div>` +
+    `<div class="bar-track"><div class="bar-fill${tone ? ' ' + tone : ''}"></div></div>`;
+  requestAnimationFrame(() => { row.querySelector('.bar-fill').style.width = pct + '%'; });
+  return row;
+}
+function renderProgress(){
+  const logged = seenCount(SPECIES);
+  const withPhotos = SPECIES.filter(s => { const e = LOG.get(s.id); return e && e.photos.length; }).length;
+  const shots = [...LOG.values()].reduce((n, e) => n + e.photos.length, 0);
+  const best = SPECIES.filter(s => isSeen(s.id)).reduce((m, s) => Math.max(m, s.rarity), 0);
+
+  const g = $('#statGrid');
+  g.textContent = '';
+  const stat = (k, v, sub) => {
+    const d = el('div','stat');
+    d.innerHTML = `<div class="stat-k">${k}</div><div class="stat-v">${v}</div><div class="stat-sub">${sub}</div>`;
+    return d;
+  };
+  g.appendChild(stat('Logged', logged, TOTAL - logged + ' still to find'));
+  g.appendChild(stat('Photographed', withPhotos, shots + (shots === 1 ? ' photo' : ' photos')));
+  g.appendChild(stat('Hardest find', best ? RARITY[best] : '—', best ? 'best tier reached' : 'nothing logged yet'));
+  g.appendChild(stat('Completion', (TOTAL ? Math.round(logged / TOTAL * 100) : 0) + '%', 'of the full checklist'));
+
+  const gb = $('#groupBars');
+  gb.textContent = '';
+  GROUPS.forEach(gr => {
+    const list = SPECIES.filter(s => s.group === gr.key);
+    gb.appendChild(bar(gr.name, seenCount(list), list.length));
+  });
+
+  const rb = $('#rarityBars');
+  rb.textContent = '';
+  [1,2,3,4].forEach(r => {
+    const list = SPECIES.filter(s => s.rarity === r);
+    rb.appendChild(bar(RARITY[r], seenCount(list), list.length, r === 3 ? 'gold' : r === 4 ? 'lilac' : ''));
+  });
+}
+
+/* ---------------- detail sheet ---------------- */
+let pendingTarget = null;
+
+async function openSheet(id){
+  S.open = id;
+  const sp = BY_ID.get(id);
+  const e = entry(id);
+  const sheet = $('#sheet');
+  sheet.hidden = false;
+  document.body.style.overflow = 'hidden';
+
+  const collTags = sp.colls.map(c => {
+    const col = COLLECTIONS.find(x => x.key === c);
+    return col ? `<span class="tag coll">${col.name}</span>` : '';
+  }).join('');
+
+  sheet.innerHTML = `
+    <div class="sheet-inner">
+      <div class="sheet-bar">
+        <button class="backbtn" id="sheetBack">${icon('back')} Dex</button>
+        <span class="sheet-no">No.${sp.no}</span>
+      </div>
+      <div class="entry">
+        <div class="bigshot" id="bigshot"><span class="glyph">${GROUP_OF[sp.group].glyph}</span></div>
+        <h2 id="sheetName">${sp.name}</h2>
+        <div class="sci">${sp.sci}</div>
+        <div class="chips">
+          <span class="tag r${sp.rarity}">${RARITY[sp.rarity]}</span>
+          <span class="tag coll">${GROUP_OF[sp.group].name}</span>
+          ${collTags}
+        </div>
+        <p class="blurb">${RARITY_NOTE[sp.rarity]}</p>
+        <div class="btnrow">
+          <button class="btn primary" id="btnCam">${icon('cam')} Take photo</button>
+          <button class="btn" id="btnPick">${icon('img')} From gallery</button>
+        </div>
+        <div class="btnrow"><button class="btn" id="btnSeen"></button></div>
+        <div class="gallery" id="gallery"></div>
+        <div class="fields">
+          <div class="field"><label for="fDate">Date seen</label><input id="fDate" type="date" value="${e.date || ''}"></div>
+          <div class="field"><label for="fPlace">Where</label><input id="fPlace" type="text" placeholder="S100, Lower Sabie, Sunset Dam…" value="${(e.place||'').replace(/"/g,'&quot;')}"></div>
+          <div class="field"><label for="fNotes">Field notes</label><textarea id="fNotes" placeholder="Behaviour, herd size, light, who spotted it first…">${e.notes || ''}</textarea></div>
+        </div>
+      </div>
+    </div>`;
+
+  sheet.scrollTop = 0;
+  $('#sheetBack').addEventListener('click', closeSheet);
+  $('#btnCam').addEventListener('click', () => { pendingTarget = id; $('#fileCam').click(); });
+  $('#btnPick').addEventListener('click', () => { pendingTarget = id; $('#filePick').click(); });
+  $('#btnSeen').addEventListener('click', async () => {
+    const en = entry(id);
+    en.seen = !en.seen;
+    if(en.seen){ en.ts = Date.now(); if(!en.date) en.date = todayStr(); }
+    await saveEntry(en);
+    paintSeenBtn(id);
+    refreshAll();
+    toast(en.seen ? 'Logged — ' + sp.name : 'Removed from your list');
+  });
+
+  const persist = debounce(async () => {
+    const en = entry(id);
+    en.date = $('#fDate').value;
+    en.place = $('#fPlace').value.trim();
+    en.notes = $('#fNotes').value.trim();
+    await saveEntry(en);
+    refreshAll();
+  }, 400);
+  ['#fDate','#fPlace','#fNotes'].forEach(sel => $(sel).addEventListener('input', persist));
+
+  paintSeenBtn(id);
+  await paintGallery(id);
+}
+function paintSeenBtn(id){
+  const b = $('#btnSeen');
+  if(!b) return;
+  const seen = isSeen(id);
+  b.className = 'btn' + (seen ? '' : ' primary');
+  b.innerHTML = seen ? icon('check') + ' Logged — tap to undo' : icon('check') + ' Mark as seen';
+}
+async function paintGallery(id){
+  const box = $('#gallery');
+  if(!box) return;
+  const e = entry(id);
+  const big = $('#bigshot');
+  if(big){
+    if(e.photos.length){
+      const u = await urlsFor(e.photos[0]);
+      if(u) big.innerHTML = `<img alt="Your photo of ${BY_ID.get(id).name}" src="${u.full}">`;
+    } else {
+      big.innerHTML = `<span class="glyph">${GROUP_OF[BY_ID.get(id).group].glyph}</span>`;
+    }
+  }
+  box.textContent = '';
+  for(const pid of e.photos){
+    const u = await urlsFor(pid);
+    if(!u) continue;
+    const fig = el('div','shot');
+    fig.innerHTML = `<img alt="Your photo of ${BY_ID.get(id).name}" src="${u.full}"><button class="del" aria-label="Delete photo">${icon('x')}</button>`;
+    fig.querySelector('.del').addEventListener('click', async ev => {
+      ev.stopPropagation();
+      const en = entry(id);
+      en.photos = en.photos.filter(p => p !== pid);
+      await dropPhoto(pid);
+      await saveEntry(en);
+      await paintGallery(id);
+      refreshAll();
+      toast('Photo deleted');
+    });
+    box.appendChild(fig);
+  }
+  const dz = el('div','dropzone', e.photos.length ? 'Add another' : 'No photo yet');
+  box.appendChild(dz);
+}
+function closeSheet(){
+  $('#sheet').hidden = true;
+  $('#sheet').textContent = '';
+  document.body.style.overflow = '';
+  S.open = null;
+}
+
+/* ---------------- shared refresh ---------------- */
+function refreshAll(){
+  renderTally();
+  if(S.view === 'list') renderList();
+  if(S.view === 'coll') renderCollections();
+  if(S.view === 'prog') renderProgress();
+}
+function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+/* ---------------- bridge for the wiring script ---------------- */
+Object.assign(window, {
+  __S: S,
+  __refresh: refreshAll,
+  __renderList: renderList,
+  __toast: (m) => toast(m),
+  __pending: () => pendingTarget,
+  __addPhotos: addPhotos,
+  __paintGallery: paintGallery,
+  __paintSeenBtn: paintSeenBtn,
+  __closeSheet: closeSheet,
+  __syncFields: id => {
+    const e = LOG.get(id); if(!e || S.open !== id) return;
+    const d = document.querySelector('#fDate');
+    if(d && !d.value && e.date) d.value = e.date;
+  },
+  __logRows: () => JSON.parse(JSON.stringify([...LOG.values()].filter(hasContent))),
+  __getPhoto: getPhoto,
+  __storageReport: storageReport,
+  __requestDurable: requestDurableStorage,
+  __putPhoto: rec => pReq(tx('photos','readwrite').put(rec)),
+  __putLog: e => pReq(tx('log','readwrite').put(e)),
+  __reload: async () => { PHOTO_URLS.forEach(u => { URL.revokeObjectURL(u.full); URL.revokeObjectURL(u.thumb); }); PHOTO_URLS.clear(); LOG.clear(); await loadAll(); }
+});
+
+/* Without this the browser files the list as "best-effort" and may evict it when
+   the phone runs low on space. Chrome grants it silently once the app looks used
+   — added to the home screen, opened a few times — so ask on every start. */
+async function requestDurableStorage(){
+  try{
+    if(!navigator.storage || !navigator.storage.persist) return null;
+    if(await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  }catch(_){ return null; }
+}
+async function storageReport(){
+  const out = {durable:null, usage:0, quota:0, memory:useMem};
+  try{
+    if(navigator.storage && navigator.storage.persisted) out.durable = await navigator.storage.persisted();
+    if(navigator.storage && navigator.storage.estimate){
+      const est = await navigator.storage.estimate();
+      out.usage = est.usage || 0;
+      out.quota = est.quota || 0;
+    }
+  }catch(_){}
+  return out;
+}
+
+/* ---------------- boot ---------------- */
+(async function boot(){
+  try{
+    idb = await openDB();
+    await loadAll();
+  }catch(err){
+    useMem = true;
+    setTimeout(() => toast('Storage is blocked in this browser — ticks will not survive a reload.'), 900);
+  }
+  renderChips();
+  refreshAll();
+  if(!useMem) requestDurableStorage();
+})();
+let toastTimer;
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(n => n.remove());
+  const t = el('div','toast', msg);
+  document.body.appendChild(t);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.remove(), 2600);
+}
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+
+/* ---------------- theme: system → light → dark ---------------- */
+const THEMES = ['system','light','dark'];
+function applyTheme(t){
+  if(t === 'system') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', t);
+  try{ localStorage.setItem('kll-theme', t); }catch(_){}
+}
+try{
+  const saved = localStorage.getItem('kll-theme');
+  if(saved && THEMES.includes(saved)) applyTheme(saved);
+}catch(_){}
+$('#themeBtn').addEventListener('click', () => {
+  let cur = 'system';
+  try{ cur = localStorage.getItem('kll-theme') || 'system'; }catch(_){}
+  const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+  applyTheme(next);
+  window.__toast && window.__toast(next === 'system' ? 'Following your phone’s theme' : next[0].toUpperCase() + next.slice(1) + ' theme');
+});
+
+/* ---------------- tabs ---------------- */
+const VIEWS = {list:'#view-list', coll:'#view-coll', prog:'#view-prog'};
+document.querySelectorAll('.viewtab').forEach(t => {
+  t.addEventListener('click', () => {
+    const v = t.dataset.view;
+    window.__S.view = v;
+    document.querySelectorAll('.viewtab').forEach(x => x.setAttribute('aria-selected', String(x === t)));
+    Object.entries(VIEWS).forEach(([k, sel]) => { $(sel).hidden = (k !== v); });
+    window.__refresh();
+    window.scrollTo({top:0});
+  });
+});
+
+/* ---------------- controls ---------------- */
+const search = $('#search');
+let sTimer;
+search.addEventListener('input', () => {
+  $('#clearSearch').hidden = !search.value;
+  clearTimeout(sTimer);
+  sTimer = setTimeout(() => { window.__S.q = search.value.trim(); window.__renderList(); }, 140);
+});
+$('#clearSearch').addEventListener('click', () => {
+  search.value = ''; $('#clearSearch').hidden = true;
+  window.__S.q = ''; window.__renderList(); search.focus();
+});
+document.querySelectorAll('.seg [data-status]').forEach(b => {
+  b.addEventListener('click', () => {
+    window.__S.status = b.dataset.status;
+    document.querySelectorAll('.seg [data-status]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    window.__renderList();
+  });
+});
+$('#sort').addEventListener('change', e => { window.__S.sort = e.target.value; window.__renderList(); });
+
+/* ---------------- photo inputs ---------------- */
+async function handleFiles(files){
+  if(!files || !files.length) return;
+  const id = window.__pending();
+  if(!id) return;
+  window.__toast('Saving ' + files.length + (files.length === 1 ? ' photo…' : ' photos…'));
+  try{
+    await window.__addPhotos(id, files);
+    await window.__paintGallery(id);
+    window.__paintSeenBtn(id);
+    window.__syncFields(id);
+    window.__refresh();
+    window.__toast(files.length === 1 ? 'Photo saved' : files.length + ' photos saved');
+  }catch(err){
+    window.__toast(err && err.message ? err.message : 'That photo could not be saved.');
+  }
+}
+/* Snapshot the list first: clearing the input mutates the live FileList, and
+   handleFiles is async — reading it after the first await loses the rest. */
+function onPicked(e){
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+  handleFiles(files);
+}
+$('#fileCam').addEventListener('change', onPicked);
+$('#filePick').addEventListener('change', onPicked);
+
+/* ---------------- backup ---------------- */
+const blobToDataURL = b => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(b); });
+const dataURLToBlob = async d => (await fetch(d)).blob();
+
+async function buildBackup(){
+  const log = window.__logRows();
+  const photos = [];
+  for(const e of log){
+    for(const pid of e.photos){
+      const rec = await window.__getPhoto(pid);
+      if(rec) photos.push({pid, full: await blobToDataURL(rec.full), thumb: await blobToDataURL(rec.thumb)});
+    }
+  }
+  return JSON.stringify({app:'kruger-life-list', version:1, exportedAt:new Date().toISOString(), log, photos});
+}
+
+async function doExport(){
+  window.__toast('Packing your backup…');
+  let json;
+  try{ json = await buildBackup(); }
+  catch(_){ window.__toast('Backup failed while reading your photos.'); return; }
+  const name = 'kruger-life-list-' + new Date().toISOString().slice(0,10) + '.json';
+
+  let saver = null;
+  try{ saver = (window.claude && window.claude.use) ? await window.claude.use('downloads') : null; }catch(_){}
+  if(saver){
+    try{
+      await saver.save({filename:name, data:json});
+      window.__toast('Backup saved');
+      return;
+    }catch(err){
+      if(err && err.code === 'cancelled'){ window.__toast('Backup cancelled'); return; }
+    }
+  }
+  // Plain-web fallback: works when the page is opened as a normal site or local file.
+  try{
+    const url = URL.createObjectURL(new Blob([json], {type:'application/json'}));
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    window.__toast('Backup downloaded');
+  }catch(_){
+    window.__toast('This browser blocked the download. Try the installed version.');
+  }
+}
+
+async function doRestore(file){
+  let data;
+  try{ data = JSON.parse(await file.text()); }
+  catch(_){ window.__toast('That file is not a Life List backup.'); return; }
+  if(!data || data.app !== 'kruger-life-list' || !Array.isArray(data.log)){
+    window.__toast('That file is not a Life List backup.');
+    return;
+  }
+  window.__toast('Restoring…');
+  try{
+    for(const p of (data.photos || [])){
+      await window.__putPhoto({pid:p.pid, full: await dataURLToBlob(p.full), thumb: await dataURLToBlob(p.thumb)});
+    }
+    for(const e of data.log) await window.__putLog(e);
+    await window.__reload();
+    window.__refresh();
+    closeMenu();
+    window.__toast('Restored ' + data.log.length + ' entries');
+  }catch(_){
+    window.__toast('Restore failed part-way. Your existing list is unchanged.');
+  }
+}
+$('#fileRestore').addEventListener('change', e => { if(e.target.files[0]) doRestore(e.target.files[0]); e.target.value = ''; });
+
+/* ---------------- menu ---------------- */
+const mb = n => (n / 1048576) < 10 ? (n / 1048576).toFixed(1) : Math.round(n / 1048576);
+async function paintStorage(){
+  const line = $('#mStorage');
+  if(!line || !window.__storageReport) return;
+  const r = await window.__storageReport();
+  if(r.memory){
+    line.className = 'storageline warn';
+    line.textContent = 'This browser is blocking storage, so nothing will survive a reload. Private browsing usually causes this.';
+    return;
+  }
+  const used = r.usage ? mb(r.usage) + ' MB used' : 'nothing stored yet';
+  const room = r.quota ? ' of about ' + mb(r.quota) + ' MB available' : '';
+  if(r.durable === true){
+    line.className = 'storageline ok';
+    line.textContent = 'Storage is protected — ' + used + room + '. Android will not clear it to free space.';
+  } else {
+    line.className = 'storageline warn';
+    line.textContent = used.charAt(0).toUpperCase() + used.slice(1) + room +
+      '. Storage is not protected yet — add this to your home screen and open it a few times, and the browser will upgrade it automatically.';
+  }
+}
+function closeMenu(){
+  document.querySelectorAll('.menu, .scrim').forEach(n => n.remove());
+}
+$('#menuBtn').addEventListener('click', () => {
+  if(document.querySelector('.menu')) return closeMenu();
+  const scrim = document.createElement('div');
+  scrim.className = 'scrim';
+  scrim.addEventListener('click', closeMenu);
+  const m = document.createElement('div');
+  m.className = 'menu';
+  m.innerHTML = `
+    <div class="menu-inner">
+      <h3>Your list lives on this phone</h3>
+      <p>Photos and ticks are stored in this browser only — nothing is uploaded, and it all works with no signal. Clearing your browser data erases it, so export a backup after a good trip.</p>
+      <p id="mStorage" class="storageline">Checking storage…</p>
+      <div class="btnrow">
+        <button class="btn primary" id="mExport">Export backup</button>
+        <button class="btn" id="mRestore">Restore backup</button>
+      </div>
+      <p style="margin-top:2px">To keep it one tap away: open your browser menu and choose <strong>Add to Home screen</strong>. It then opens full-screen like any other app.</p>
+      <div class="btnrow"><button class="btn ghost" id="mClose">Close</button></div>
+    </div>`;
+  document.body.appendChild(scrim);
+  document.body.appendChild(m);
+  paintStorage();
+  $('#mExport').addEventListener('click', doExport);
+  $('#mRestore').addEventListener('click', () => $('#fileRestore').click());
+  $('#mClose').addEventListener('click', closeMenu);
+});
+
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape') return;
+  if(document.querySelector('.menu')) return closeMenu();
+  if(!$('#sheet').hidden) window.__closeSheet();
+});
+})();
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
