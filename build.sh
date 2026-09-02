@@ -6,22 +6,6 @@ set -e
 cd "$(dirname "$0")"
 cat build/01-head.html build/02-style2.html build/03-markup.html \
     build/04-data.html build/05-birds.html build/06-app.html build/07-boot.html > app.html
-{
-  echo '<!doctype html>'
-  echo '<html lang="en">'
-  echo '<head>'
-  echo '<meta charset="utf-8">'
-  echo '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
-  echo '<meta name="theme-color" content="#171B15" media="(prefers-color-scheme: dark)">'
-  echo '<meta name="theme-color" content="#F6F7F3" media="(prefers-color-scheme: light)">'
-  echo '<meta name="description" content="A field checklist of the animals of Kruger National Park. Tick off what you see, attach your own photos, watch the count climb.">'
-  echo '<meta name="mobile-web-app-capable" content="yes">'
-  echo '<style>html{color-scheme:light dark}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>'
-  cat app.html
-  echo '</head>'
-  echo '<body></body>'
-  echo '</html>'
-} > /dev/null
 # The parts carry <title>/<style>/<script> plus body markup, so split them properly:
 python3 - <<'PY'
 import io,re
