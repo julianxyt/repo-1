@@ -18,8 +18,14 @@ console.log('opened:', await p.textContent('#sheetName'));
 
 // attach two photos via the gallery picker
 await p.locator('#btnPick').click();
- await p.setInputFiles('#filePick', [SP+'leopard.png', SP+'roller.png']);
-await p.waitForTimeout(2500);
+await p.setInputFiles('#filePick', [SP+'leopard.png', SP+'roller.png']);
+// each file now opens the crop dialog; accept the default framing
+for (let i = 0; i < 2; i++) {
+  await p.locator('#cSave').waitFor({state:'visible', timeout:8000});
+  await p.locator('#cSave').click();
+  await p.waitForTimeout(600);
+}
+await p.waitForTimeout(900);
 console.log('shots in gallery:', await p.locator('.shot').count());
 console.log('auto-marked seen:', await p.textContent('#btnSeen'));
 console.log('date auto-filled:', await p.inputValue('#fDate'));
@@ -37,7 +43,7 @@ await p.waitForTimeout(500);
 await p.fill('#search','');
 await p.waitForTimeout(500);
 console.log('tally:', await p.textContent('#tallySeen'), '/', await p.textContent('#tallyTot'));
-console.log('thumbs rendered in list:', await p.locator('.thumb img').count());
+console.log('thumbs rendered in list:', await p.locator('.shotwin img').count());
 console.log('multi badge:', await p.locator('.thumb .multi').count());
 
 // export backup round-trip (plain-web fallback path)
