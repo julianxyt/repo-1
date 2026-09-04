@@ -105,35 +105,229 @@ async function dropPhoto(pid){
   await pReq(tx('photos','readwrite').delete(pid));
 }
 
-/* Resize on the way in: a phone photo is ~5 MB, and a life list is hundreds of them. */
-function shrink(file, max, quality){
-  return new Promise((resolve, reject) => {
-    const img = new Image(), url = URL.createObjectURL(file);
-    img.onload = () => {
+/* Output sizes. A phone photo is ~5 MB and a life list is hundreds of them, so
+   everything is re-encoded on the way in — the choice is how much detail to keep. */
+const SIZES = [
+  {key:'compact',  label:'Compact',  px:1000, q:0.80, note:'~120 KB'},
+  {key:'standard', label:'Standard', px:1600, q:0.82, note:'~280 KB'},
+  {key:'high',     label:'High',     px:2400, q:0.86, note:'~650 KB'}
+];
+function preferredSize(){
+  try{
+    const hit = SIZES.find(z => z.key === localStorage.getItem('kll-photo-size'));
+    if(hit) return hit;
+  }catch(_){}
+  return SIZES[1];
+}
+function rememberSize(key){ try{ localStorage.setItem('kll-photo-size', key); }catch(_){} }
+
+const loadImage = src => new Promise((res, rej) => {
+  const i = new Image();
+  i.onload = () => res(i);
+  i.onerror = () => rej(new Error('That file could not be read as an image.'));
+  i.src = src;
+});
+const canvasBlob = (c, q) => new Promise((res, rej) =>
+  c.toBlob(x => x ? res(x) : rej(new Error('encode failed')), 'image/jpeg', q));
+
+/* Square crop, because the dex card window is square — cropping here means the
+   framing you pick is the framing that gets stored, rather than whatever
+   object-fit happens to leave in view. Resolves {full, thumb}, or null if
+   cancelled. */
+async function cropDialog(file, index, total){
+  const url = URL.createObjectURL(file);
+  let img;
+  try{ img = await loadImage(url); }
+  catch(err){ URL.revokeObjectURL(url); toast(err.message); return null; }
+
+  let size = preferredSize();
+  const ui = el('div','cropper');
+  ui.innerHTML = `
+    <div class="crop-bar">
+      <b>Frame the shot</b>
+      <span class="of">${total > 1 ? (index + 1) + ' / ' + total : ''}</span>
+    </div>
+    <div class="crop-stage">
+      <div class="crop-frame" id="cFrame"><div class="crop-grid"></div></div>
+    </div>
+    <div class="crop-ctrls">
+      <p class="crop-hint">Drag to move it. Pinch or use the slider to zoom in.</p>
+      <div class="crop-row"><span>Zoom</span><input type="range" id="cZoom" min="100" max="500" value="100" aria-label="Zoom"></div>
+      <div class="crop-row"><span>Size</span><div class="sizepick" id="cSize"></div></div>
+      <div class="btnrow">
+        <button class="btn" id="cRotate">Rotate</button>
+        <button class="btn ghost" id="cCancel">Cancel</button>
+        <button class="btn primary" id="cSave">Use photo</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ui);
+  document.body.style.overflow = 'hidden';
+
+  const frame = ui.querySelector('#cFrame');
+  const grid = frame.querySelector('.crop-grid');
+  const zoomEl = ui.querySelector('#cZoom');
+  const sizeBox = ui.querySelector('#cSize');
+
+  SIZES.forEach(z => {
+    const btn = el('button');
+    btn.type = 'button';
+    btn.innerHTML = `${z.label}<small>${z.px}px · ${z.note}</small>`;
+    btn.setAttribute('aria-pressed', String(z.key === size.key));
+    btn.addEventListener('click', () => {
+      size = z;
+      rememberSize(z.key);
+      sizeBox.querySelectorAll('button').forEach((n, i) => n.setAttribute('aria-pressed', String(SIZES[i].key === z.key)));
+    });
+    sizeBox.appendChild(btn);
+  });
+
+  let node = null, base = 1, zoom = 1, tx = 0, ty = 0, V = 0;
+
+  function mount(){
+    if(node) node.remove();
+    node = el('img');
+    node.alt = '';
+    node.src = img.src;
+    frame.insertBefore(node, grid);
+    V = frame.clientWidth || 300;
+    base = Math.max(V / img.naturalWidth, V / img.naturalHeight);
+    zoom = 1;
+    zoomEl.value = '100';
+    tx = (V - img.naturalWidth * base) / 2;
+    ty = (V - img.naturalHeight * base) / 2;
+    paint();
+  }
+  function paint(){
+    const scale = base * zoom;
+    const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+    tx = Math.min(0, Math.max(V - dw, tx));
+    ty = Math.min(0, Math.max(V - dh, ty));
+    node.style.width = dw + 'px';
+    node.style.height = dh + 'px';
+    node.style.left = tx + 'px';
+    node.style.top = ty + 'px';
+  }
+  /* Zoom about a point in the frame, so whatever is under your fingers stays put. */
+  function zoomTo(next, px, py){
+    next = Math.min(5, Math.max(1, next));
+    const s0 = base * zoom, s1 = base * next;
+    tx = px - (px - tx) / s0 * s1;
+    ty = py - (py - ty) / s0 * s1;
+    zoom = next;
+    zoomEl.value = String(Math.round(zoom * 100));
+    paint();
+  }
+
+  const pts = new Map();
+  let pinch = null;
+  frame.addEventListener('pointerdown', ev => {
+    frame.setPointerCapture(ev.pointerId);
+    pts.set(ev.pointerId, {x: ev.clientX, y: ev.clientY});
+    if(pts.size === 2){
+      const [p, q] = [...pts.values()];
+      pinch = {d: Math.hypot(p.x - q.x, p.y - q.y), z: zoom};
+    }
+  });
+  frame.addEventListener('pointermove', ev => {
+    const prev = pts.get(ev.pointerId);
+    if(!prev) return;
+    const now = {x: ev.clientX, y: ev.clientY};
+    pts.set(ev.pointerId, now);
+    const r = frame.getBoundingClientRect();
+    if(pts.size >= 2 && pinch){
+      const [p, q] = [...pts.values()];
+      const d = Math.hypot(p.x - q.x, p.y - q.y);
+      if(pinch.d > 0) zoomTo(pinch.z * (d / pinch.d), (p.x + q.x) / 2 - r.left, (p.y + q.y) / 2 - r.top);
+    } else {
+      tx += now.x - prev.x;
+      ty += now.y - prev.y;
+      paint();
+    }
+  });
+  const release = ev => { pts.delete(ev.pointerId); if(pts.size < 2) pinch = null; };
+  frame.addEventListener('pointerup', release);
+  frame.addEventListener('pointercancel', release);
+  frame.addEventListener('wheel', ev => {
+    ev.preventDefault();
+    const r = frame.getBoundingClientRect();
+    zoomTo(zoom * (ev.deltaY < 0 ? 1.12 : 0.89), ev.clientX - r.left, ev.clientY - r.top);
+  }, {passive:false});
+  zoomEl.addEventListener('input', () => zoomTo(+zoomEl.value / 100, V / 2, V / 2));
+
+  ui.querySelector('#cRotate').addEventListener('click', async () => {
+    const c = document.createElement('canvas');
+    c.width = img.naturalHeight;
+    c.height = img.naturalWidth;
+    const ctx = c.getContext('2d');
+    ctx.translate(c.width / 2, c.height / 2);
+    ctx.rotate(Math.PI / 2);
+    ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+    let blob;
+    try{ blob = await canvasBlob(c, 0.95); }catch(_){ return; }
+    const next = URL.createObjectURL(blob);
+    const old = img.src;
+    try{
+      img = await loadImage(next);
+      if(old !== url) URL.revokeObjectURL(old);
+      mount();
+    }catch(_){ URL.revokeObjectURL(next); }
+  });
+
+  mount();
+  window.addEventListener('resize', mount);
+
+  return new Promise(resolve => {
+    const done = out => {
+      window.removeEventListener('resize', mount);
+      if(img.src !== url) URL.revokeObjectURL(img.src);
       URL.revokeObjectURL(url);
-      const scale = Math.min(1, max / Math.max(img.width, img.height));
-      const c = document.createElement('canvas');
-      c.width = Math.round(img.width * scale);
-      c.height = Math.round(img.height * scale);
-      const ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, c.width, c.height);
-      c.toBlob(b => b ? resolve(b) : reject(new Error('encode failed')), 'image/jpeg', quality);
+      ui.remove();
+      document.body.style.overflow = '';
+      resolve(out);
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('That file could not be read as an image.')); };
-    img.src = url;
+    ui.querySelector('#cCancel').addEventListener('click', () => done(null));
+    ui.querySelector('#cSave').addEventListener('click', async () => {
+      const scale = base * zoom;
+      const side = Math.min(V / scale, img.naturalWidth, img.naturalHeight);
+      const sx = Math.max(0, Math.min(-tx / scale, img.naturalWidth - side));
+      const sy = Math.max(0, Math.min(-ty / scale, img.naturalHeight - side));
+      const render = n => {
+        const c = document.createElement('canvas');
+        c.width = c.height = n;
+        c.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, n, n);
+        return c;
+      };
+      try{
+        // never upscale past what the crop actually contains
+        const px = Math.max(400, Math.min(size.px, Math.round(side)));
+        const [full, thumb] = await Promise.all([
+          canvasBlob(render(px), size.q),
+          canvasBlob(render(200), 0.7)
+        ]);
+        done({full, thumb});
+      }catch(_){
+        toast('That photo could not be saved.');
+        done(null);
+      }
+    });
   });
 }
+
 async function addPhotos(id, files){
   const e = entry(id);
-  for(const f of files){
-    if(!f.type.startsWith('image/')) continue;
+  const imgs = [...files].filter(f => f.type.startsWith('image/'));
+  let added = 0;
+  for(let i = 0; i < imgs.length; i++){
+    const out = await cropDialog(imgs[i], i, imgs.length);
+    if(!out) continue;                    // cancelled — skip it, keep any others
     const pid = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-    const [full, thumb] = await Promise.all([shrink(f, 1600, 0.82), shrink(f, 200, 0.7)]);
-    await pReq(tx('photos','readwrite').put({pid, full, thumb}));
+    await pReq(tx('photos','readwrite').put({pid, full: out.full, thumb: out.thumb}));
     e.photos.push(pid);
+    added++;
   }
-  if(e.photos.length && !e.seen){ e.seen = true; e.ts = Date.now(); if(!e.date) e.date = todayStr(); }
-  await saveEntry(e);
+  if(added && !e.seen){ e.seen = true; e.ts = Date.now(); if(!e.date) e.date = todayStr(); }
+  if(added) await saveEntry(e);
+  return added;
 }
 const todayStr = () => new Date().toISOString().slice(0,10);
 

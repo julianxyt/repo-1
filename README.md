@@ -64,6 +64,24 @@ Two filters have been applied to the full park list:
 Birds are further cut to the large, loud and brightly coloured — the little brown
 jobs that need a scope and an hour are gone.
 
+## Photos
+
+Adding a photo opens a crop step before anything is stored: drag to move, pinch or
+slide to zoom, rotate if the phone got the orientation wrong. The crop is square
+because the dex card window is square, so the framing you choose is the framing
+that gets kept rather than whatever `object-fit` happens to leave in view.
+
+Three output sizes, remembered between photos:
+
+| | Longest edge | Roughly |
+| --- | --- | --- |
+| Compact | 1000 px | 120 KB |
+| Standard | 1600 px | 280 KB |
+| High | 2400 px | 650 KB |
+
+Nothing is ever upscaled past what the crop actually contains, and a 200 px
+thumbnail is stored alongside each photo so the grid stays fast.
+
 ## Backups
 
 The list lives in this browser's IndexedDB. Clearing site data erases it, so

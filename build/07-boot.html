@@ -61,14 +61,15 @@ async function handleFiles(files){
   if(!files || !files.length) return;
   const id = window.__pending();
   if(!id) return;
-  window.__toast('Saving ' + files.length + (files.length === 1 ? ' photo…' : ' photos…'));
   try{
-    await window.__addPhotos(id, files);
+    // addPhotos opens the crop dialog per file and returns how many were kept,
+    // so say nothing until the framing is settled.
+    const added = await window.__addPhotos(id, files);
     await window.__paintGallery(id);
     window.__paintSeenBtn(id);
     window.__syncFields(id);
     window.__refresh();
-    window.__toast(files.length === 1 ? 'Photo saved' : files.length + ' photos saved');
+    if(added) window.__toast(added === 1 ? 'Photo saved' : added + ' photos saved');
   }catch(err){
     window.__toast(err && err.message ? err.message : 'That photo could not be saved.');
   }
