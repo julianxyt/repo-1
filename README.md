@@ -1,6 +1,6 @@
 # Kruger Life List
 
-A field checklist for **southern Kruger National Park** — 252 species across
+A field checklist for **southern Kruger National Park** — 246 species across
 mammals, birds, reptiles, amphibians and fish, scoped to what you can realistically
 pick out from a vehicle. Numbered dex entries, a photo per species, and a running
 count of how many are left.
@@ -68,9 +68,17 @@ jobs that need a scope and an hour are gone.
 
 Every species carries a silhouette, a habitat line and a field note. The
 silhouette shows before you have a photo, the way a Pokédex shows a shadow for
-a species you have not caught. There are 40 silhouettes for 252 species: they
-are body-shape archetypes shared across similar animals, not per-species
-artwork, so every antelope shares one drawing and every stork another.
+a species you have not caught. There are 40 silhouettes for 246 species: body-shape archetypes shared across
+similar animals, so every antelope shares one drawing and every stork another.
+
+The entry itself opens with a **reference plate** — the archetype painted in that
+species' own colours and markings, so a kudu reads as a striped grey antelope and
+an impala as a tan one with white underparts. These are drawn, not photographs,
+and the expanded view says so. Colour comes from 115 palettes mapped by species,
+with four marking patterns: plain, stripe, spot and bar.
+
+Tap the plate to expand it. Your own photos sit at the far end of the entry,
+below the field notes, and expand the same way.
 
 Species are cross-tagged into eight sets. Four are the lists Kruger regulars
 keep — Big Five, Secret Seven, Ugly Five, birding Big Six — and four are keyed

@@ -5,7 +5,7 @@
 set -e
 cd "$(dirname "$0")"
 cat build/01-head.html build/02-style2.html build/03-markup.html \
-    build/04-data.html build/05-birds.html build/08-dex.html build/06-app.html build/07-boot.html > app.html
+    build/04-data.html build/05-birds.html build/08-dex.html build/09-look.html build/06-app.html build/07-boot.html > app.html
 # The parts carry <title>/<style>/<script> plus body markup, so split them properly:
 python3 - <<'PY'
 import io,re
