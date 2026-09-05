@@ -16,7 +16,11 @@ const COLLECTIONS = [
   {key:'b5', name:'The Big Five',      note:'The colonial hunting list that became the safari benchmark — named for danger on foot, not for size. Both rhinos are listed separately, so this one runs to six.'},
   {key:'s7', name:'The Secret Seven',  note:"Kruger's own list of the shy and the nocturnal. Most people leave the park having seen none of them."},
   {key:'u5', name:'The Ugly Five',     note:'Unfairly named. Between them they do most of the park’s actual work.'},
-  {key:'b6', name:'The Birding Big Six', note:'Six large, scarce birds that Kruger birders measure a trip by. Pel’s Fishing Owl breaks most attempts.'}
+  {key:'b6', name:'The Birding Big Six', note:'Six large, scarce birds that Kruger birders measure a trip by. Pel’s Fishing Owl breaks most attempts.'},
+  {key:'nd', name:'The Night Drive',   note:'Only bookable through a camp, and the only way most people ever see these. Almost nothing here is out in daylight.'},
+  {key:'rv', name:'The River Run',     note:'Everything tied to the Sabie and the Crocodile. Drive the river roads slowly and stop at every bridge.'},
+  {key:'kp', name:'The Koppies',       note:'Granite country around Berg-en-Dal and Malelane. A different set of animals lives on the rock than in the bush below.'},
+  {key:'sm', name:'Summer Only',       note:'Migrants that arrive with the first rains in November and are gone again by April. A winter trip cannot complete this one.'}
 ];
 
 const RARITY = ['','Common','Uncommon','Rare','Very rare'];
@@ -29,7 +33,7 @@ Leopard|Panthera pardus|2|b5
 Cape Buffalo|Syncerus caffer|1|b5
 White Rhinoceros|Ceratotherium simum|3|b5
 Black Rhinoceros|Diceros bicornis|4|b5
-Hippopotamus|Hippopotamus amphibius|1|
+Hippopotamus|Hippopotamus amphibius|1|rv
 Giraffe|Giraffa camelopardalis|1|
 Plains Zebra|Equus quagga burchellii|1|
 Common Warthog|Phacochoerus africanus|1|u5
@@ -40,23 +44,23 @@ African Wild Dog|Lycaon pictus|3|
 Black-backed Jackal|Lupulella mesomelas|1|
 Side-striped Jackal|Lupulella adusta|4|
 Caracal|Caracal caracal|3|
-Serval|Leptailurus serval|3|s7
-African Wildcat|Felis lybica|2|s7
-Aardvark|Orycteropus afer|4|s7
+Serval|Leptailurus serval|3|s7,nd
+African Wildcat|Felis lybica|2|s7,nd
+Aardvark|Orycteropus afer|4|s7,nd
 Aardwolf|Proteles cristatus|4|
-Ground Pangolin|Smutsia temminckii|4|s7
+Ground Pangolin|Smutsia temminckii|4|s7,nd
 Honey Badger|Mellivora capensis|3|
-African Civet|Civettictis civetta|2|s7
-Large-spotted Genet|Genetta maculata|1|s7
+African Civet|Civettictis civetta|2|s7,nd
+Large-spotted Genet|Genetta maculata|1|s7,nd
 Small-spotted Genet|Genetta genetta|2|
-Cape Porcupine|Hystrix africaeaustralis|2|s7
-Cape Clawless Otter|Aonyx capensis|3|
+Cape Porcupine|Hystrix africaeaustralis|2|s7,nd
+Cape Clawless Otter|Aonyx capensis|3|rv
 Striped Polecat|Ictonyx striatus|3|
 African Striped Weasel|Poecilogale albinucha|4|
 Banded Mongoose|Mungos mungo|1|
 Dwarf Mongoose|Helogale parvula|1|
 Slender Mongoose|Herpestes sanguineus|1|
-White-tailed Mongoose|Ichneumia albicauda|2|
+White-tailed Mongoose|Ichneumia albicauda|2|nd
 Marsh Mongoose|Atilax paludinosus|3|
 Large Grey Mongoose|Herpestes ichneumon|3|
 Impala|Aepyceros melampus|1|
@@ -69,31 +73,32 @@ Common Duiker|Sylvicapra grimmia|1|
 Red Duiker|Cephalophus natalensis|4|
 Steenbok|Raphicerus campestris|1|
 Sharpe's Grysbok|Raphicerus sharpei|4|
-Klipspringer|Oreotragus oreotragus|2|
+Klipspringer|Oreotragus oreotragus|2|kp
 Oribi|Ourebia ourebi|3|
 Sable Antelope|Hippotragus niger|3|
 Common Eland|Taurotragus oryx|4|
 Southern Reedbuck|Redunca arundinum|3|
-Mountain Reedbuck|Redunca fulvorufula|4|
+Mountain Reedbuck|Redunca fulvorufula|4|kp
 Chacma Baboon|Papio ursinus|1|
 Vervet Monkey|Chlorocebus pygerythrus|1|
-Thick-tailed Bushbaby|Otolemur crassicaudatus|2|
-Springhare|Pedetes capensis|2|
+Thick-tailed Bushbaby|Otolemur crassicaudatus|2|nd
+Tree Squirrel|Paraxerus cepapi|1|
+Springhare|Pedetes capensis|2|nd
 Scrub Hare|Lepus saxatilis|1|
-Smith's Red Rock Rabbit|Pronolagus rupestris|3|
+Smith's Red Rock Rabbit|Pronolagus rupestris|3|kp
 Greater Cane Rat|Thryonomys swinderianus|3|
-Rock Hyrax|Procavia capensis|2|
+Rock Hyrax|Procavia capensis|2|kp
 Southern Giant Pouched Rat|Cricetomys ansorgei|3|
 `,
 rep:`
-Nile Crocodile|Crocodylus niloticus|1|
+Nile Crocodile|Crocodylus niloticus|1|rv
 Leopard Tortoise|Stigmochelys pardalis|1|
 Speke's Hinge-back Tortoise|Kinixys spekii|2|
 Serrated Hinged Terrapin|Pelusios sinuatus|1|
 Marsh Terrapin|Pelomedusa galeata|2|
-Water Monitor|Varanus niloticus|1|
+Water Monitor|Varanus niloticus|1|rv
 Rock Monitor|Varanus albigularis|2|
-Giant Plated Lizard|Matobosaurus validus|2|
+Giant Plated Lizard|Matobosaurus validus|2|kp
 African Rock Python|Python natalensis|2|
 Black Mamba|Dendroaspis polylepis|2|
 Mozambique Spitting Cobra|Naja mossambica|2|
