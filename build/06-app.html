@@ -19,7 +19,22 @@ GROUPS.forEach((g, gi) => {
     });
   });
 });
-SPECIES.forEach((sp, i) => { sp.no = String(i + 1).padStart(3, '0'); });
+/* Silhouettes are body-shape archetypes, so several keys share one drawing. */
+const SIL_ALIAS = {
+  smallcat:'cat', hyena:'canid', bushbaby:'primate', squirrel:'rodent', hyrax:'rodent',
+  mustelid:'mongoose', jacana:'wader', terrapin:'tortoise', catfish:'fish',
+  nightjar:'passerine', beeeater:'roller', weaver:'passerine', waxbill:'passerine',
+  sunbird:'passerine'
+};
+const SIL_FALLBACK = {mam:'antelope', bir:'passerine', rep:'snake', amp:'frog', fis:'fish'};
+SPECIES.forEach((sp, i) => {
+  sp.no = String(i + 1).padStart(3, '0');
+  const d = (typeof DEX !== 'undefined' && DEX[sp.name]) || [];
+  const key = d[0] || SIL_FALLBACK[sp.group];
+  sp.sil = SIL_ALIAS[key] || key;
+  sp.where = d[1] || '';
+  sp.note = d[2] || '';
+});
 const BY_ID = new Map(SPECIES.map(s => [s.id, s]));
 const TOTAL = SPECIES.length;
 const GROUP_OF = Object.fromEntries(GROUPS.map(g => [g.key, g]));
@@ -424,7 +439,7 @@ function rowFor(sp){
   card.appendChild(top);
 
   const win = el('div','shotwin');
-  win.innerHTML = `<span class="glyph">${GROUP_OF[sp.group].glyph}</span>`;
+  win.innerHTML = `<svg class="sil" viewBox="0 0 100 100" aria-hidden="true"><use href="#sil-${sp.sil}"/></svg>`;
   if(e && e.photos.length){
     urlsFor(e.photos[0]).then(u => {
       if(!u) return;
@@ -583,7 +598,7 @@ async function openSheet(id){
         <span class="sheet-no">No.${sp.no}</span>
       </div>
       <div class="entry">
-        <div class="bigshot" id="bigshot"><span class="glyph">${GROUP_OF[sp.group].glyph}</span></div>
+        <div class="bigshot" id="bigshot"><svg class="sil" viewBox="0 0 100 100" aria-hidden="true"><use href="#sil-${sp.sil}"/></svg></div>
         <h2 id="sheetName">${sp.name}</h2>
         <div class="sci">${sp.sci}</div>
         <div class="chips">
@@ -591,7 +606,9 @@ async function openSheet(id){
           <span class="tag coll">${GROUP_OF[sp.group].name}</span>
           ${collTags}
         </div>
-        <p class="blurb">${RARITY_NOTE[sp.rarity]}</p>
+        ${sp.note ? `<section class="dexsec"><h3>Dex entry</h3><p>${sp.note}</p></section>` : ''}
+        ${sp.where ? `<section class="dexsec where"><h3>Where to look</h3><p>${sp.where}</p></section>` : ''}
+        <section class="dexsec"><h3>Odds of a sighting</h3><p>${RARITY_NOTE[sp.rarity]}</p></section>
         <div class="btnrow">
           <button class="btn primary" id="btnCam">${icon('cam')} Take photo</button>
           <button class="btn" id="btnPick">${icon('img')} From gallery</button>
@@ -650,7 +667,7 @@ async function paintGallery(id){
       const u = await urlsFor(e.photos[0]);
       if(u) big.innerHTML = `<img alt="Your photo of ${BY_ID.get(id).name}" src="${u.full}">`;
     } else {
-      big.innerHTML = `<span class="glyph">${GROUP_OF[BY_ID.get(id).group].glyph}</span>`;
+      big.innerHTML = `<svg class="sil" viewBox="0 0 100 100" aria-hidden="true"><use href="#sil-${BY_ID.get(id).sil}"/></svg>`;
     }
   }
   box.textContent = '';
@@ -658,7 +675,13 @@ async function paintGallery(id){
     const u = await urlsFor(pid);
     if(!u) continue;
     const fig = el('div','shot');
-    fig.innerHTML = `<img alt="Your photo of ${BY_ID.get(id).name}" src="${u.full}"><button class="del" aria-label="Delete photo">${icon('x')}</button>`;
+    fig.innerHTML = `<img alt="Your photo of ${BY_ID.get(id).name}" src="${u.full}">` +
+      `<button class="recrop" aria-label="Reframe photo">${icon('crop')}</button>` +
+      `<button class="del" aria-label="Delete photo">${icon('x')}</button>`;
+    fig.querySelector('.recrop').addEventListener('click', async ev => {
+      ev.stopPropagation();
+      await recropPhoto(id, pid);
+    });
     fig.querySelector('.del').addEventListener('click', async ev => {
       ev.stopPropagation();
       const en = entry(id);
@@ -674,6 +697,21 @@ async function paintGallery(id){
   const dz = el('div','dropzone', e.photos.length ? 'Add another' : 'No photo yet');
   box.appendChild(dz);
 }
+/* Reframes what is stored, not the original off the camera — the source here is
+   already the cropped copy, so repeated recrops lose a little each time. */
+async function recropPhoto(id, pid){
+  const rec = await getPhoto(pid);
+  if(!rec) return;
+  const out = await cropDialog(rec.full, 0, 1);
+  if(!out) return;
+  const u = PHOTO_URLS.get(pid);
+  if(u){ URL.revokeObjectURL(u.full); URL.revokeObjectURL(u.thumb); PHOTO_URLS.delete(pid); }
+  await pReq(tx('photos','readwrite').put({pid, full: out.full, thumb: out.thumb}));
+  await paintGallery(id);
+  refreshAll();
+  toast('Photo reframed');
+}
+
 function closeSheet(){
   $('#sheet').hidden = true;
   $('#sheet').textContent = '';

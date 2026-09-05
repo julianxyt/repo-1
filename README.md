@@ -1,6 +1,6 @@
 # Kruger Life List
 
-A field checklist for **southern Kruger National Park** — 251 species across
+A field checklist for **southern Kruger National Park** — 252 species across
 mammals, birds, reptiles, amphibians and fish, scoped to what you can realistically
 pick out from a vehicle. Numbered dex entries, a photo per species, and a running
 count of how many are left.
@@ -64,6 +64,19 @@ Two filters have been applied to the full park list:
 Birds are further cut to the large, loud and brightly coloured — the little brown
 jobs that need a scope and an hour are gone.
 
+## Dex entries
+
+Every species carries a silhouette, a habitat line and a field note. The
+silhouette shows before you have a photo, the way a Pokédex shows a shadow for
+a species you have not caught. There are 40 silhouettes for 252 species: they
+are body-shape archetypes shared across similar animals, not per-species
+artwork, so every antelope shares one drawing and every stork another.
+
+Species are cross-tagged into eight sets. Four are the lists Kruger regulars
+keep — Big Five, Secret Seven, Ugly Five, birding Big Six — and four are keyed
+to how you actually go looking: the Night Drive, the River Run, the Koppies,
+and Summer Only.
+
 ## Photos
 
 Adding a photo opens a crop step before anything is stored: drag to move, pinch or
@@ -81,6 +94,10 @@ Three output sizes, remembered between photos:
 
 Nothing is ever upscaled past what the crop actually contains, and a 200 px
 thumbnail is stored alongside each photo so the grid stays fast.
+
+Photos already saved can be reframed from the button on each thumbnail. That
+works from the stored copy rather than the original off the camera, so
+repeated recrops lose a little quality each time.
 
 ## Backups
 
