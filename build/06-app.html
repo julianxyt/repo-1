@@ -355,6 +355,57 @@ const isSeen = id => !!(LOG.get(id) && LOG.get(id).seen);
 
 function seenCount(list){ return list.reduce((n, s) => n + (isSeen(s.id) ? 1 : 0), 0); }
 
+/* Reference artwork: the archetype silhouette filled with the species colour,
+   with markings clipped to the body region. Drawn, not photographed. */
+let plateSeq = 0;
+/* Clip to the silhouette itself by copying the symbol's own shapes into a
+   clipPath. Clipping to a <use> of a <symbol> is not reliably supported;
+   clipping to a union of plain shapes is. */
+function silShapes(sil){
+  const sym = document.getElementById('sil-' + sil);
+  return sym ? sym.innerHTML : '';
+}
+function plateSVG(sp, label){
+  const key = LOOK_OF[sp.name] || LOOK_BY_SIL[sp.sil] || 'lbj';
+  const [base, belly, mark, pat] = LOOKS[key] || LOOKS.lbj;
+  const [cx, cy, rx, ry] = BODY[sp.sil] || [50, 55, 24, 14];
+  const id = 'pl' + (++plateSeq);
+  let marks = '';
+  if(pat === 'stripe'){                       // right across the animal, legs and neck too
+    for(let x = 2; x < 100; x += 7)
+      marks += `<rect x="${x}" y="0" width="3.2" height="100" fill="${mark}"/>`;
+  } else if(pat === 'bar'){
+    for(let y = 4; y < 100; y += 6)
+      marks += `<rect x="0" y="${y}" width="100" height="2.4" fill="${mark}"/>`;
+  } else if(pat === 'spot'){
+    // spread wider than the body so a giraffe gets them up the neck too; the
+    // silhouette clip trims whatever falls outside the animal
+    for(let i = 0; i < 44; i++){
+      const a = i * 2.399, r = Math.sqrt((i + 1) / 44);
+      const x = cx + Math.cos(a) * rx * 1.7 * r;
+      const y = cy + Math.sin(a) * ry * 2.4 * r;
+      marks += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${mark}"/>`;
+    }
+  } else if(pat === 'band'){                  // contrasting upper half, head included
+    marks += `<rect x="0" y="0" width="100" height="${(cy - ry * 0.15).toFixed(1)}" fill="${mark}"/>`;
+  }
+  return `<svg class="plate" viewBox="0 0 100 100" role="img" aria-label="${label || ('Illustration of ' + sp.name)}">`
+    + `<defs><clipPath id="${id}">${silShapes(sp.sil)}</clipPath></defs>`
+    + `<use href="#sil-${sp.sil}" fill="${base}"/>`
+    + `<g clip-path="url(#${id})">`
+    + `<rect x="0" y="${(cy + ry * 0.25).toFixed(1)}" width="100" height="100" fill="${belly}"/>`
+    + marks + `</g></svg>`;
+}
+
+/* Tap anything to dismiss. Used by both the reference plate and your own shots. */
+function lightbox(inner){
+  document.querySelectorAll('.lightbox').forEach(n => n.remove());
+  const ui = el('div','lightbox');
+  ui.innerHTML = `<button class="lb-close" aria-label="Close">${icon('x')}</button><div class="lb-inner">${inner}</div>`;
+  ui.addEventListener('click', () => ui.remove());
+  document.body.appendChild(ui);
+}
+
 /* ---------------- masthead ---------------- */
 function renderTally(){
   const done = seenCount(SPECIES);
@@ -598,14 +649,21 @@ async function openSheet(id){
         <span class="sheet-no">No.${sp.no}</span>
       </div>
       <div class="entry">
-        <div class="bigshot" id="bigshot"><svg class="sil" viewBox="0 0 100 100" aria-hidden="true"><use href="#sil-${sp.sil}"/></svg></div>
-        <h2 id="sheetName">${sp.name}</h2>
-        <div class="sci">${sp.sci}</div>
-        <div class="chips">
-          <span class="tag r${sp.rarity}">${RARITY[sp.rarity]}</span>
-          <span class="tag coll">${GROUP_OF[sp.group].name}</span>
-          ${collTags}
+        <div class="entryhead">
+          <button class="platewin" id="platewin" aria-label="Expand the illustration of ${sp.name}">
+            ${plateSVG(sp)}
+            <span class="platewin-tag">Ref</span>
+          </button>
+          <div class="entrytitle">
+            <h2 id="sheetName">${sp.name}</h2>
+            <div class="sci">${sp.sci}</div>
+            <div class="chips">
+              <span class="tag r${sp.rarity}">${RARITY[sp.rarity]}</span>
+              <span class="tag coll">${GROUP_OF[sp.group].name}</span>
+            </div>
+          </div>
         </div>
+        ${collTags ? `<div class="chips setchips">${collTags}</div>` : ''}
         ${sp.note ? `<section class="dexsec"><h3>Dex entry</h3><p>${sp.note}</p></section>` : ''}
         ${sp.where ? `<section class="dexsec where"><h3>Where to look</h3><p>${sp.where}</p></section>` : ''}
         <section class="dexsec"><h3>Odds of a sighting</h3><p>${RARITY_NOTE[sp.rarity]}</p></section>
@@ -614,17 +672,23 @@ async function openSheet(id){
           <button class="btn" id="btnPick">${icon('img')} From gallery</button>
         </div>
         <div class="btnrow"><button class="btn" id="btnSeen"></button></div>
-        <div class="gallery" id="gallery"></div>
         <div class="fields">
           <div class="field"><label for="fDate">Date seen</label><input id="fDate" type="date" value="${e.date || ''}"></div>
           <div class="field"><label for="fPlace">Where</label><input id="fPlace" type="text" placeholder="S100, Lower Sabie, Sunset Dam…" value="${(e.place||'').replace(/"/g,'&quot;')}"></div>
           <div class="field"><label for="fNotes">Field notes</label><textarea id="fNotes" placeholder="Behaviour, herd size, light, who spotted it first…">${e.notes || ''}</textarea></div>
         </div>
+        <section class="yourshots">
+          <h3>Your photos</h3>
+          <div class="gallery" id="gallery"></div>
+        </section>
       </div>
     </div>`;
 
   sheet.scrollTop = 0;
   $('#sheetBack').addEventListener('click', closeSheet);
+  $('#platewin').addEventListener('click', () => lightbox(
+    `<div class="lb-plate">${plateSVG(sp)}</div>` +
+    `<p class="lb-cap"><b>${sp.name}</b><br>Reference illustration, not a photograph.</p>`));
   $('#btnCam').addEventListener('click', () => { pendingTarget = id; $('#fileCam').click(); });
   $('#btnPick').addEventListener('click', () => { pendingTarget = id; $('#filePick').click(); });
   $('#btnSeen').addEventListener('click', async () => {
@@ -661,15 +725,6 @@ async function paintGallery(id){
   const box = $('#gallery');
   if(!box) return;
   const e = entry(id);
-  const big = $('#bigshot');
-  if(big){
-    if(e.photos.length){
-      const u = await urlsFor(e.photos[0]);
-      if(u) big.innerHTML = `<img alt="Your photo of ${BY_ID.get(id).name}" src="${u.full}">`;
-    } else {
-      big.innerHTML = `<svg class="sil" viewBox="0 0 100 100" aria-hidden="true"><use href="#sil-${BY_ID.get(id).sil}"/></svg>`;
-    }
-  }
   box.textContent = '';
   for(const pid of e.photos){
     const u = await urlsFor(pid);
@@ -682,6 +737,8 @@ async function paintGallery(id){
       ev.stopPropagation();
       await recropPhoto(id, pid);
     });
+    fig.querySelector('img').addEventListener('click', () => lightbox(
+      `<img class="lb-img" alt="Your photo of ${BY_ID.get(id).name}" src="${u.full}">`));
     fig.querySelector('.del').addEventListener('click', async ev => {
       ev.stopPropagation();
       const en = entry(id);
@@ -745,6 +802,8 @@ Object.assign(window, {
   },
   __logRows: () => JSON.parse(JSON.stringify([...LOG.values()].filter(hasContent))),
   __getPhoto: getPhoto,
+  __species: n => SPECIES.find(x => x.name === n),
+  __plate: sp => plateSVG(sp),
   __storageReport: storageReport,
   __requestDurable: requestDurableStorage,
   __putPhoto: rec => pReq(tx('photos','readwrite').put(rec)),

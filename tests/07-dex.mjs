@@ -48,7 +48,7 @@ const secs = await p.evaluate(() => [...document.querySelectorAll('.dexsec')].ma
   s.querySelector('h3').textContent + ': ' + s.querySelector('p').textContent.slice(0,52)));
 console.log('entry sections:');
 secs.forEach(x => console.log('   ', x));
-console.log('silhouette in big panel:', await p.locator('#bigshot .sil').count());
+console.log('reference plate in header:', await p.locator('#platewin .plate').count());
 await p.screenshot({path:SP+'dex-entry-new.png'});
 
 // 4. reframe an existing photo: add one, then recrop it smaller
